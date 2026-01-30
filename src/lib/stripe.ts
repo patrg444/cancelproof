@@ -53,36 +53,40 @@ export function hasReachedFreeLimit(subscriptionCount: number): boolean {
   return subscriptionCount >= PRICING_PLANS.free.limits.subscriptions;
 }
 
-// Create checkout session (requires backend)
+// Create checkout session via Supabase Edge Function
 export async function createCheckoutSession(
   priceId: string,
-  userId: string,
-  returnUrl: string
+  billingPeriod: 'monthly' | 'yearly',
+  authToken: string
 ): Promise<{ url: string } | { error: string }> {
   try {
-    // In production, this would call your backend API
-    // which creates a Stripe Checkout Session
-    const response = await fetch('/api/create-checkout-session', {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    if (!supabaseUrl) {
+      throw new Error('Supabase URL not configured');
+    }
+
+    const response = await fetch(`${supabaseUrl}/functions/v1/create-checkout`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`,
       },
       body: JSON.stringify({
         priceId,
-        userId,
-        returnUrl,
+        billingPeriod,
       }),
     });
 
+    const data = await response.json();
+
     if (!response.ok) {
-      throw new Error('Failed to create checkout session');
+      throw new Error(data.error || 'Failed to create checkout session');
     }
 
-    const data = await response.json();
     return { url: data.url };
   } catch (error) {
     console.error('Checkout error:', error);
-    return { error: 'Failed to start checkout. Please try again.' };
+    return { error: error instanceof Error ? error.message : 'Failed to start checkout. Please try again.' };
   }
 }
 
