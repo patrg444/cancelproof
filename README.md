@@ -1,6 +1,8 @@
-# CancelProof
+# CancelMem
 
 A subscription cancellation tracking and proof management application. Track your subscriptions, manage cancel-by deadlines, and maintain proof of cancellation attempts to prevent unwanted charges.
+
+**Live at: [cancelmem.com](https://cancelmem.com)**
 
 ## Features
 
