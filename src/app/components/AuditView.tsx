@@ -98,7 +98,7 @@ export function AuditView({ subscriptions }: AuditViewProps) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `cancelproof-export-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    a.download = `cancelmem-export-${format(new Date(), 'yyyy-MM-dd')}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };

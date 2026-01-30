@@ -49,7 +49,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `cancelproof-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `cancelmem-backup-${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

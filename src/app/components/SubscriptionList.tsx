@@ -164,7 +164,7 @@ export function SubscriptionList({
               </div>
               <h3 className="text-xl font-semibold mb-2">No subscriptions yet</h3>
               <p className="text-sm text-muted-foreground mb-6">
-                Add your first subscription to start tracking cancel-by dates and storing proof. CancelProof helps you never miss a cancellation deadline.
+                Add your first subscription to start tracking cancel-by dates and storing proof. CancelMem helps you never miss a cancellation deadline.
               </p>
               <div className="space-y-2 text-xs text-left text-muted-foreground bg-gray-50 rounded-lg p-4">
                 <p className="font-medium text-gray-900">How it works:</p>

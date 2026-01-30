@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cancelproof-v1';
+const CACHE_NAME = 'cancelmem-v1';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -88,12 +88,12 @@ self.addEventListener('push', (event) => {
         title: 'Dismiss',
       },
     ],
-    tag: data.tag || 'cancelproof-notification',
+    tag: data.tag || 'cancelmem-notification',
     renotify: true,
   };
 
   event.waitUntil(
-    self.registration.showNotification(data.title || 'CancelProof Reminder', options)
+    self.registration.showNotification(data.title || 'CancelMem Reminder', options)
   );
 });
 

@@ -1,5 +1,5 @@
 -- Enable pg_cron extension (if not already enabled)
--- Run this in the Supabase SQL Editor
+-- Run this in the Supabase SQL Editor for CancelMem
 
 -- Create the cron job to send reminder emails daily at 8 AM UTC
 SELECT cron.schedule(

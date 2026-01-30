@@ -1,6 +1,6 @@
 {
-  "name": "CancelProof",
-  "short_name": "CancelProof",
+  "name": "CancelMem",
+  "short_name": "CancelMem",
   "description": "Track subscription cancellations and never miss a cancel-by deadline",
   "start_url": "/",
   "display": "standalone",

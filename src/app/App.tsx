@@ -206,7 +206,7 @@ export default function App() {
                 </svg>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">CancelProof</h1>
+                <h1 className="text-2xl font-bold text-gray-900">CancelMem</h1>
                 <div className="flex items-center gap-2 text-sm text-gray-500">
                   {isCloudEnabled ? (
                     <>

@@ -1,5 +1,5 @@
 {
-  "name": "cancelproof",
+  "name": "cancelmem",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",

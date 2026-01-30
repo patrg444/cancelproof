@@ -32,7 +32,7 @@ async function sendEmail(to: string, subject: string, html: string) {
       Authorization: `Bearer ${RESEND_API_KEY}`,
     },
     body: JSON.stringify({
-      from: "CancelProof <reminders@cancelproof.app>",
+      from: "CancelMem <reminders@cancelmem.com>",
       to: [to],
       subject,
       html,
@@ -79,7 +79,7 @@ function generateReminderEmail(subscription: Subscription, daysUntil: number): {
         <div style="display: inline-block; background-color: #2563eb; border-radius: 8px; padding: 12px;">
           <span style="color: white; font-size: 24px; font-weight: bold;">✓</span>
         </div>
-        <h1 style="margin: 12px 0 0; color: #111827; font-size: 24px;">CancelProof</h1>
+        <h1 style="margin: 12px 0 0; color: #111827; font-size: 24px;">CancelMem</h1>
       </div>
 
       <!-- Alert Banner -->
@@ -115,25 +115,25 @@ function generateReminderEmail(subscription: Subscription, daysUntil: number): {
 
       <!-- CTA Button -->
       <div style="text-align: center; margin-bottom: 24px;">
-        <a href="https://cancelproof.app"
+        <a href="https://cancelmem.com"
            style="display: inline-block; background-color: #2563eb; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
-          Open CancelProof
+          Open CancelMem
         </a>
       </div>
 
       <!-- Tips -->
       <div style="border-top: 1px solid #e5e7eb; padding-top: 20px;">
         <p style="margin: 0 0 12px; color: #6b7280; font-size: 14px;">
-          <strong>Pro tip:</strong> After cancelling, upload a screenshot or save the confirmation number in CancelProof as proof.
+          <strong>Pro tip:</strong> After cancelling, upload a screenshot or save the confirmation number in CancelMem as proof.
         </p>
       </div>
     </div>
 
     <!-- Footer -->
     <div style="text-align: center; margin-top: 20px; color: #9ca3af; font-size: 12px;">
-      <p style="margin: 0;">You're receiving this because you enabled email reminders in CancelProof.</p>
+      <p style="margin: 0;">You're receiving this because you enabled email reminders in CancelMem.</p>
       <p style="margin: 8px 0 0;">
-        <a href="https://cancelproof.app/settings" style="color: #6b7280;">Manage notification settings</a>
+        <a href="https://cancelmem.com/settings" style="color: #6b7280;">Manage notification settings</a>
       </p>
     </div>
   </div>
