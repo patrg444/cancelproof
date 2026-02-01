@@ -13,7 +13,7 @@ import {
   requestNotificationPermission,
   isNotificationSupported,
 } from '@/lib/notifications';
-import { PRICING_PLANS, createCheckoutSession } from '@/lib/stripe';
+import { PRICING_PLANS, createCheckoutSession, createBillingPortalSession } from '@/lib/stripe';
 import { supabase } from '@/lib/supabase';
 
 interface SettingsDialogProps {
@@ -138,6 +138,33 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     }
   };
 
+  const handleManageSubscription = async () => {
+    if (!user || !supabase) return;
+
+    setIsLoading(true);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        toast.error('Please sign in again');
+        return;
+      }
+
+      const result = await createBillingPortalSession(session.access_token);
+
+      if ('error' in result) {
+        toast.error(result.error);
+      } else if (result.url) {
+        window.location.href = result.url;
+      }
+    } catch (error) {
+      console.error('Portal error:', error);
+      toast.error('Failed to open billing portal');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
@@ -251,10 +278,25 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   ))}
                 </ul>
                 {userSubscription.current_period_end && (
-                  <p className="text-xs text-green-600">
+                  <p className="text-xs text-green-600 mb-3">
                     Renews on {new Date(userSubscription.current_period_end).toLocaleDateString()}
                   </p>
                 )}
+                <Button
+                  variant="outline"
+                  onClick={handleManageSubscription}
+                  className="w-full"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    'Manage Subscription'
+                  )}
+                </Button>
               </div>
             ) : (
               <div className="bg-gray-50 rounded-lg p-4">

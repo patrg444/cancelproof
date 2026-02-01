@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs';
-import { Plus, Target, User, LogOut, Cloud, CloudOff, Bell, Settings } from 'lucide-react';
+import { Plus, Target, User, LogOut, Cloud, CloudOff, Bell, Settings, Crown } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
+import { Alert, AlertDescription } from '@/app/components/ui/alert';
 import { SubscriptionList } from '@/app/components/SubscriptionList';
 import { AddSubscriptionDialog } from '@/app/components/AddSubscriptionDialog';
 import { SubscriptionDetailDialog } from '@/app/components/SubscriptionDetailDialog';
 import { MarkCancelledDialog } from '@/app/components/MarkCancelledDialog';
 import { ActionPanel } from '@/app/components/ActionPanel';
 import { AuditView } from '@/app/components/AuditView';
+import { LandingPage } from '@/app/components/LandingPage';
 import { AuthDialog } from '@/app/components/AuthDialog';
 import { SettingsDialog } from '@/app/components/SettingsDialog';
 import { Subscription } from '@/types/subscription';
@@ -15,6 +17,8 @@ import { toast, Toaster } from 'sonner';
 import { sampleSubscriptions } from '@/data/sampleData';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
+
+const FREE_SUBSCRIPTION_LIMIT = 5;
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,7 +33,7 @@ import {
 } from '@/lib/notifications';
 
 export default function App() {
-  const { user, loading: authLoading, signOut, isConfigured } = useAuth();
+  const { user, loading: authLoading, signOut, isConfigured, isPremium } = useAuth();
   const {
     subscriptions,
     loading: subsLoading,
@@ -39,6 +43,9 @@ export default function App() {
     syncToCloud,
     isCloudEnabled,
   } = useSubscriptions();
+
+  const canAddSubscription = isPremium || subscriptions.length < FREE_SUBSCRIPTION_LIMIT;
+  const subscriptionsRemaining = FREE_SUBSCRIPTION_LIMIT - subscriptions.length;
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [selectedSubscription, setSelectedSubscription] = useState<Subscription | null>(null);
@@ -91,6 +98,10 @@ export default function App() {
   };
 
   const handleAddSubscription = async (subscription: Omit<Subscription, 'id' | 'createdAt' | 'updatedAt'>) => {
+    if (!canAddSubscription) {
+      toast.error(`Free plan limited to ${FREE_SUBSCRIPTION_LIMIT} subscriptions. Upgrade to Premium for unlimited tracking.`);
+      return;
+    }
     try {
       await addSubscription(subscription);
       setIsAddDialogOpen(false);
@@ -98,6 +109,14 @@ export default function App() {
     } catch {
       toast.error('Failed to add subscription');
     }
+  };
+
+  const handleOpenAddDialog = () => {
+    if (!canAddSubscription) {
+      toast.error(`Free plan limited to ${FREE_SUBSCRIPTION_LIMIT} subscriptions. Upgrade to Premium for unlimited tracking.`);
+      return;
+    }
+    setIsAddDialogOpen(true);
   };
 
   const handleEditSubscription = (subscription: Subscription) => {
@@ -191,6 +210,34 @@ export default function App() {
     );
   }
 
+  const showLanding = !subsLoading && !user && subscriptions.length === 0;
+
+  if (showLanding) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Toaster position="top-right" />
+
+        <LandingPage
+          onGetStarted={() => setIsAddDialogOpen(true)}
+          onLoadSampleData={handleLoadSampleData}
+          onSignIn={() => setIsAuthDialogOpen(true)}
+        />
+
+        <AddSubscriptionDialog
+          open={isAddDialogOpen}
+          onOpenChange={handleDialogClose}
+          onSave={selectedSubscription ? handleUpdateSubscription : handleAddSubscription}
+          initialData={selectedSubscription || undefined}
+        />
+
+        <AuthDialog
+          open={isAuthDialogOpen}
+          onOpenChange={setIsAuthDialogOpen}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Toaster position="top-right" />
@@ -233,9 +280,10 @@ export default function App() {
               )}
 
               {/* Add subscription button */}
-              <Button onClick={() => setIsAddDialogOpen(true)}>
+              <Button onClick={handleOpenAddDialog} disabled={!canAddSubscription}>
                 <Plus className="h-5 w-5 mr-2" />
                 Add Subscription
+                {!isPremium && !canAddSubscription && <Crown className="h-3 w-3 ml-2 text-yellow-400" />}
               </Button>
 
               {/* User menu */}
@@ -283,6 +331,29 @@ export default function App() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Upgrade Banner for Free Users Near Limit */}
+        {!isPremium && subscriptions.length >= FREE_SUBSCRIPTION_LIMIT && (
+          <Alert className="mb-6 bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+            <Crown className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="flex items-center justify-between">
+              <span>
+                You've reached the free plan limit of {FREE_SUBSCRIPTION_LIMIT} subscriptions.
+                Upgrade to Premium for unlimited tracking, analytics, and export features.
+              </span>
+              <Button size="sm" className="ml-4 bg-blue-600 hover:bg-blue-700" onClick={() => setIsSettingsDialogOpen(true)}>
+                Upgrade to Premium
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Subscription count for free users */}
+        {!isPremium && subscriptions.length > 0 && subscriptions.length < FREE_SUBSCRIPTION_LIMIT && (
+          <p className="text-sm text-gray-500 mb-4">
+            {subscriptionsRemaining} of {FREE_SUBSCRIPTION_LIMIT} free subscriptions remaining
+          </p>
+        )}
+
         {subsLoading ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
