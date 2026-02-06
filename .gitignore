@@ -5,6 +5,11 @@ node_modules/
 .env
 .env.local
 .env.*.local
+unified-credentials.json
+.secrets/
+
+# Local assistant settings
+.claude/
 
 # Build output
 dist/

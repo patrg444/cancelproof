@@ -4,6 +4,23 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Subscription, ProofDocument, TimelineEvent } from '@/types/subscription';
 import { saveToLocalStorage, loadFromLocalStorage } from '@/utils/storage';
 
+// --- Input validation helpers ---
+function sanitizeAmount(value: number): number {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n < 0) return 0;
+  return Math.round(n * 100) / 100;
+}
+
+const VALID_CURRENCIES = new Set([
+  'USD', 'EUR', 'GBP', 'CAD', 'AUD', 'JPY', 'CHF', 'CNY', 'INR', 'BRL',
+  'MXN', 'KRW', 'SEK', 'NOK', 'DKK', 'NZD', 'SGD', 'HKD', 'ZAR', 'PLN',
+]);
+
+function sanitizeCurrency(value: string): string {
+  const upper = (value || 'USD').trim().toUpperCase();
+  return VALID_CURRENCIES.has(upper) ? upper : 'USD';
+}
+
 // Convert database row to Subscription type
 function dbToSubscription(row: any): Subscription {
   return {
@@ -43,9 +60,9 @@ function subscriptionToDb(sub: Subscription, userId: string): any {
   return {
     id: sub.id,
     user_id: userId,
-    name: sub.name,
-    amount: sub.amount,
-    currency: sub.currency,
+    name: (sub.name || '').trim().slice(0, 200),
+    amount: sanitizeAmount(sub.amount),
+    currency: sanitizeCurrency(sub.currency),
     renewal_date: sub.renewalDate,
     billing_period: sub.billingPeriod,
     category: sub.category,
@@ -106,10 +123,7 @@ export function useSubscriptions() {
         setSubscriptions(data?.subscriptions || []);
       }
     } catch (err) {
-      console.error('Failed to load subscriptions:', err);
-      setError('Failed to load subscriptions');
-
-      // Fallback to localStorage
+      // Fallback to localStorage on error
       const data = loadFromLocalStorage();
       setSubscriptions(data?.subscriptions || []);
     } finally {
@@ -148,7 +162,6 @@ export function useSubscriptions() {
 
       return newSubscription;
     } catch (err) {
-      console.error('Failed to add subscription:', err);
       throw err;
     }
   }, [subscriptions, user]);
@@ -181,7 +194,6 @@ export function useSubscriptions() {
 
       return updatedSubscription;
     } catch (err) {
-      console.error('Failed to update subscription:', err);
       throw err;
     }
   }, [subscriptions, user]);
@@ -203,7 +215,6 @@ export function useSubscriptions() {
       setSubscriptions(updated);
       saveToLocalStorage({ subscriptions: updated, version: '1.0.0' });
     } catch (err) {
-      console.error('Failed to delete subscription:', err);
       throw err;
     }
   }, [subscriptions, user]);
@@ -237,8 +248,8 @@ export function useSubscriptions() {
 
       // Reload to get merged data
       await loadSubscriptions();
-    } catch (err) {
-      console.error('Failed to sync to cloud:', err);
+    } catch {
+      // Sync error handled gracefully - local data preserved
     }
   }, [user, loadSubscriptions]);
 
