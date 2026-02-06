@@ -25,6 +25,7 @@ import {
 import { format, differenceInDays } from 'date-fns';
 import { exportSubscriptionProofBinder } from '@/utils/pdfExport';
 import { getProofStatus, getCancelByRuleLabel, getIntentLabel } from '@/utils/subscriptionHelpers';
+import { formatCurrency } from '@/utils/subscriptionUtils';
 
 interface SubscriptionDetailDialogProps {
   subscription: Subscription | null;
@@ -92,10 +93,10 @@ export function SubscriptionDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl md:max-w-4xl">
         <DialogHeader>
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
+          <div className="flex items-start justify-between gap-4 pr-8">
+            <div className="flex-1 min-w-0">
               <DialogTitle className="text-2xl">{subscription.name}</DialogTitle>
               <div className="flex gap-2 mt-2">
                 <Badge variant={
@@ -115,44 +116,46 @@ export function SubscriptionDetailDialog({
                 <Badge variant="outline">{getIntentLabel(subscription.intent)}</Badge>
               </div>
             </div>
-            <div className="text-right">
+            <div className="text-right shrink-0">
               <div className="text-2xl font-bold">
-                {subscription.currency}{subscription.amount.toFixed(2)}
+                {formatCurrency(subscription.amount, subscription.currency)}
               </div>
-              <div className="text-sm text-gray-500">per {subscription.billingPeriod}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">per {subscription.billingPeriod === 'one-time' ? 'one-time' : subscription.billingPeriod.replace('ly', '')}</div>
             </div>
           </div>
         </DialogHeader>
 
+        {/* Scrollable body */}
+        <div className="overflow-y-auto min-h-0">
         {/* Key Dates */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
           <div className="p-4 border rounded-lg">
-            <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-1">
               <AlertCircle className="h-4 w-4" />
               Cancel-By Deadline
             </div>
-            <div className="font-semibold">{format(new Date(subscription.cancelByDate), 'MMM d, yyyy')}</div>
-            <div className="text-xs text-gray-500 mt-1">
-              {daysUntilCancelBy > 0 
-                ? `${daysUntilCancelBy} days remaining`
+            <div className="font-semibold dark:text-white">{format(new Date(subscription.cancelByDate), 'MMM d, yyyy')}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              {daysUntilCancelBy > 0
+                ? `${daysUntilCancelBy} day${daysUntilCancelBy !== 1 ? 's' : ''} remaining`
                 : daysUntilCancelBy === 0
                 ? 'Today!'
                 : 'Date passed'}
             </div>
-            <div className="text-xs text-gray-400 mt-2">
+            <div className="text-xs text-gray-400 dark:text-gray-500 mt-2">
               Rule: {getCancelByRuleLabel(subscription.cancelByRule)}
             </div>
           </div>
 
           <div className="p-4 border rounded-lg">
-            <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-1">
               <Calendar className="h-4 w-4" />
               Next Renewal
             </div>
-            <div className="font-semibold">{format(new Date(subscription.renewalDate), 'MMM d, yyyy')}</div>
-            <div className="text-xs text-gray-500 mt-1">
-              {daysUntilRenewal > 0 
-                ? `in ${daysUntilRenewal} days`
+            <div className="font-semibold dark:text-white">{format(new Date(subscription.renewalDate), 'MMM d, yyyy')}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              {daysUntilRenewal > 0
+                ? `in ${daysUntilRenewal} day${daysUntilRenewal !== 1 ? 's' : ''}`
                 : daysUntilRenewal === 0
                 ? 'Today'
                 : 'Overdue'}
@@ -162,7 +165,7 @@ export function SubscriptionDetailDialog({
 
         {/* Actions */}
         {(subscription.status === 'active' || subscription.status === 'trial') && (
-          <div className="flex gap-2 pb-4 border-b">
+          <div className="flex flex-wrap gap-2 pb-4 border-b">
             {subscription.cancellationUrl && (
               <Button
                 variant="default"
@@ -253,23 +256,23 @@ export function SubscriptionDetailDialog({
             <div className="space-y-4">
               {/* Cancel-by Rule */}
               <div>
-                <label className="text-sm font-medium text-gray-700">Cancel-By Rule</label>
-                <p className="text-sm text-gray-600 mt-1">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Cancel-By Rule</label>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                   {getCancelByRuleLabel(subscription.cancelByRule)}
                   {subscription.cancelByRule !== 'anytime' && (
-                    <span className="text-gray-500"> → Deadline: {format(new Date(subscription.cancelByDate), 'MMM d, yyyy')}</span>
+                    <span className="text-gray-500 dark:text-gray-400"> → Deadline: {format(new Date(subscription.cancelByDate), 'MMM d, yyyy')}</span>
                   )}
                 </p>
               </div>
 
               {subscription.cancellationUrl && (
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Cancellation URL</label>
-                  <a 
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Cancellation URL</label>
+                  <a
                     href={subscription.cancellationUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block text-sm text-blue-600 hover:underline mt-1"
+                    className="block text-sm text-blue-600 dark:text-blue-400 hover:underline mt-1"
                   >
                     {subscription.cancellationUrl}
                   </a>
@@ -278,8 +281,8 @@ export function SubscriptionDetailDialog({
 
               {subscription.cancellationSteps && (
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Cancellation Steps</label>
-                  <p className="text-sm text-gray-600 mt-1 whitespace-pre-wrap">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Cancellation Steps</label>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 whitespace-pre-wrap">
                     {subscription.cancellationSteps}
                   </p>
                 </div>
@@ -287,27 +290,28 @@ export function SubscriptionDetailDialog({
 
               {subscription.cancelByNotes && (
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Deadline Notes</label>
-                  <p className="text-sm text-gray-600 mt-1">{subscription.cancelByNotes}</p>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Deadline Notes</label>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{subscription.cancelByNotes}</p>
                 </div>
               )}
 
               {subscription.supportContact && (
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Support Contact</label>
-                  <p className="text-sm text-gray-600 mt-1">{subscription.supportContact}</p>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Support Contact</label>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{subscription.supportContact}</p>
                 </div>
               )}
 
               {subscription.notes && (
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Notes</label>
-                  <p className="text-sm text-gray-600 mt-1">{subscription.notes}</p>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Notes</label>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{subscription.notes}</p>
                 </div>
               )}
             </div>
           </TabsContent>
         </Tabs>
+        </div>
       </DialogContent>
     </Dialog>
   );

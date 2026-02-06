@@ -278,7 +278,7 @@ export default function App() {
               )}
 
               {/* Add subscription button */}
-              <Button onClick={handleOpenAddDialog} disabled={!canAddSubscription}>
+              <Button onClick={handleOpenAddDialog} variant={canAddSubscription ? 'default' : 'secondary'}>
                 <Plus className="h-5 w-5 sm:mr-2" />
                 <span className="hidden sm:inline">Add Subscription</span>
                 {!isPremium && !canAddSubscription && <Crown className="h-3 w-3 ml-1 sm:ml-2 text-yellow-400" />}

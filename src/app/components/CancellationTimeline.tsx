@@ -60,17 +60,17 @@ export function CancellationTimeline({ events }: CancellationTimelineProps) {
       case 'support-contacted':
         return 'bg-orange-100 text-orange-600';
       case 'status-changed':
-        return 'bg-gray-100 text-gray-600';
+        return 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400';
       case 'note-added':
-        return 'bg-gray-100 text-gray-600';
+        return 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400';
       default:
-        return 'bg-gray-100 text-gray-600';
+        return 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400';
     }
   };
 
   if (events.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
+      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
         <FileText className="h-12 w-12 mx-auto mb-3 text-gray-400" />
         <p className="text-sm">No timeline events yet</p>
         <p className="text-xs mt-1">Events will appear as you take actions</p>
@@ -94,7 +94,7 @@ export function CancellationTimeline({ events }: CancellationTimelineProps) {
           <div key={event.id} className="relative">
             {/* Timeline line */}
             {!isLast && (
-              <div className="absolute left-6 top-12 bottom-0 w-0.5 bg-gray-200 -mb-4" />
+              <div className="absolute left-6 top-12 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700 -mb-4" />
             )}
             
             <div className="flex gap-4">
@@ -108,15 +108,15 @@ export function CancellationTimeline({ events }: CancellationTimelineProps) {
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">
                     <p className="font-medium text-sm">{event.description}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                       {format(new Date(event.timestamp), 'MMM d, yyyy h:mm a')}
                     </p>
                   </div>
                 </div>
                 
                 {event.notes && (
-                  <Card className="mt-2 p-3 bg-gray-50">
-                    <p className="text-xs text-gray-700">{event.notes}</p>
+                  <Card className="mt-2 p-3 bg-gray-50 dark:bg-gray-800">
+                    <p className="text-xs text-gray-700 dark:text-gray-300">{event.notes}</p>
                   </Card>
                 )}
               </div>

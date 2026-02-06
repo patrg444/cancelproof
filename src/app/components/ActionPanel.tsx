@@ -170,13 +170,13 @@ export function ActionPanel({ subscriptions, onSubscriptionClick, onMarkCancelle
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-medium truncate">{subscription.name}</h4>
+                      <h4 className="font-medium truncate dark:text-white">{subscription.name}</h4>
                       <Badge variant={
                         daysUntilCancelBy === 0 ? 'destructive' :
                         daysUntilCancelBy === 1 ? 'destructive' :
                         'default'
                       }>
-                        {daysUntilCancelBy === 0 ? 'Today!' : 
+                        {daysUntilCancelBy === 0 ? 'Today!' :
                          daysUntilCancelBy === 1 ? 'Tomorrow' :
                          `${daysUntilCancelBy}d left`}
                       </Badge>
@@ -249,7 +249,7 @@ export function ActionPanel({ subscriptions, onSubscriptionClick, onMarkCancelle
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-medium truncate">{subscription.name}</h4>
+                      <h4 className="font-medium truncate dark:text-white">{subscription.name}</h4>
                       <Badge variant="outline" className="bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700">
                         Trial
                       </Badge>
@@ -327,7 +327,7 @@ export function ActionPanel({ subscriptions, onSubscriptionClick, onMarkCancelle
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-medium">{subscription.name}</h4>
+                      <h4 className="font-medium dark:text-white">{subscription.name}</h4>
                       <ProofStatusBadge 
                         status={subscription.proofStatus}
                         count={subscription.proofDocuments.length}

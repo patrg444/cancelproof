@@ -123,21 +123,21 @@ export function ProofUploader({ onAddProof, onCancel }: ProofUploaderProps) {
           <div className="mt-1">
             <label
               htmlFor="proof-file"
-              className={`flex items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-dashed rounded-md appearance-none cursor-pointer focus:outline-none ${
-                !file ? 'border-gray-300 hover:border-gray-400' : 'border-blue-300'
+              className={`flex items-center justify-center w-full h-32 px-4 transition bg-white dark:bg-gray-900 border-2 border-dashed rounded-md appearance-none cursor-pointer focus:outline-none ${
+                !file ? 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500' : 'border-blue-300 dark:border-blue-600'
               }`}
             >
               <div className="flex flex-col items-center space-y-2">
                 {file ? (
                   <>
-                    <FileText className="h-8 w-8 text-gray-600" />
-                    <span className="text-sm text-gray-600">{file.name}</span>
+                    <FileText className="h-8 w-8 text-gray-600 dark:text-gray-400" />
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{file.name}</span>
                   </>
                 ) : (
                   <>
                     <Upload className="h-8 w-8 text-gray-400" />
-                    <span className="text-sm text-gray-600">Click to upload</span>
-                    <span className="text-xs text-gray-500">PNG, JPG, PDF up to 10MB</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Click to upload</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, PDF up to 10MB</span>
                   </>
                 )}
               </div>

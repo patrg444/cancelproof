@@ -133,7 +133,7 @@ export function MarkCancelledDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Record Cancellation</DialogTitle>
           <DialogDescription>
@@ -141,7 +141,7 @@ export function MarkCancelledDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className="space-y-6 py-4 overflow-y-auto min-h-0">
           {/* Outcome Selection */}
           <div className="space-y-3">
             <Label>What happened?</Label>
@@ -156,7 +156,7 @@ export function MarkCancelledDialog({
                     <CheckCircle className="h-4 w-4" />
                     I successfully cancelled
                   </label>
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                     You received confirmation that the subscription was cancelled
                   </p>
                 </div>
@@ -171,7 +171,7 @@ export function MarkCancelledDialog({
                     <HelpCircle className="h-4 w-4" />
                     I tried but I'm not sure it worked
                   </label>
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                     You attempted to cancel but didn't receive clear confirmation
                   </p>
                 </div>
@@ -199,7 +199,7 @@ export function MarkCancelledDialog({
               id="method"
               value={method}
               onChange={(e) => setMethod(e.target.value as CancellationMethod)}
-              className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+              className="flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-white px-3 py-2 text-sm"
             >
               <option value="web">Website</option>
               <option value="app-store">App Store</option>
@@ -244,7 +244,7 @@ export function MarkCancelledDialog({
                   {proofs.length > 0 ? `Add Another Proof (${proofs.length} added)` : 'Add Proof (Screenshot, Email, PDF)'}
                 </Button>
                 {proofs.length > 0 && (
-                  <div className="text-sm text-gray-600 space-y-1">
+                  <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
                     {proofs.map((proof, index) => (
                       <div key={index} className="flex items-center gap-2">
                         <CheckCircle className="h-3 w-3 text-green-600" />
@@ -274,15 +274,16 @@ export function MarkCancelledDialog({
             />
           </div>
 
-          {/* Submit Actions */}
-          <div className="flex gap-3 pt-4 border-t">
-            <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
-              Cancel
-            </Button>
-            <Button onClick={handleSubmit} className="flex-1">
-              {outcome === 'confirmed' ? 'Mark as Cancelled' : 'Record Attempt'}
-            </Button>
-          </div>
+        </div>
+
+        {/* Submit Actions - fixed footer */}
+        <div className="flex gap-3 pt-4 border-t shrink-0">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
+            Cancel
+          </Button>
+          <Button onClick={handleSubmit} className="flex-1">
+            {outcome === 'confirmed' ? 'Mark as Cancelled' : 'Record Attempt'}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

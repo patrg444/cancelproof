@@ -29,11 +29,11 @@ export function ProofList({ proofs, onDeleteProof, onViewProof }: ProofListProps
   if (proofs.length === 0) {
     return (
       <div className="text-center py-12 px-4">
-        <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+        <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-3">
           <FileText className="h-6 w-6 text-gray-400" />
         </div>
-        <p className="text-sm font-medium text-gray-700">No proof items yet</p>
-        <p className="text-xs text-gray-500 mt-1">Add screenshots, emails, or confirmation numbers as proof of cancellation</p>
+        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">No proof items yet</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Add screenshots, emails, or confirmation numbers as proof of cancellation</p>
       </div>
     );
   }
@@ -46,15 +46,15 @@ export function ProofList({ proofs, onDeleteProof, onViewProof }: ProofListProps
         return (
           <Card key={proof.id} className="p-4">
             <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-gray-100">
-                <Icon className="h-5 w-5 text-gray-600" />
+              <div className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800">
+                <Icon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
               </div>
               
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
                     <h4 className="font-medium text-sm truncate">{proof.name}</h4>
-                    <p className="text-xs text-gray-500 mt-0.5">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                       {format(new Date(proof.timestamp), 'MMM d, yyyy h:mm a')}
                     </p>
                   </div>
@@ -86,13 +86,13 @@ export function ProofList({ proofs, onDeleteProof, onViewProof }: ProofListProps
                 </div>
                 
                 {proof.confirmationNumber && (
-                  <div className="mt-2 p-2 bg-gray-50 rounded text-xs font-mono">
+                  <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-800 rounded text-xs font-mono">
                     {proof.confirmationNumber}
                   </div>
                 )}
                 
                 {proof.notes && (
-                  <p className="mt-2 text-xs text-gray-600">{proof.notes}</p>
+                  <p className="mt-2 text-xs text-gray-600 dark:text-gray-400">{proof.notes}</p>
                 )}
               </div>
             </div>

@@ -164,7 +164,7 @@ export function AddSubscriptionDialog({ open, onOpenChange, onSave, initialData 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{initialData ? 'Edit Subscription' : 'Add Subscription'}</DialogTitle>
           <DialogDescription>
@@ -174,7 +174,7 @@ export function AddSubscriptionDialog({ open, onOpenChange, onSave, initialData 
           </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 overflow-y-auto min-h-0">
           {/* Step 1: Basic Info (Required) */}
           {step === 'basic' && (
             <div className="space-y-4">

@@ -117,7 +117,7 @@ export function AuditView({ subscriptions }: AuditViewProps) {
   return (
     <div className="space-y-6">
       {/* Overview Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-3">
             <CardDescription>Total Active Subscriptions</CardDescription>
@@ -305,7 +305,7 @@ export function AuditView({ subscriptions }: AuditViewProps) {
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        {formatCurrency(sub.amount, sub.currency)} per {sub.billingPeriod}
+                        {formatCurrency(sub.amount, sub.currency)} per {sub.billingPeriod === 'one-time' ? 'one-time' : sub.billingPeriod.replace('ly', '')}
                       </p>
                     </div>
                     <div className="text-right">
