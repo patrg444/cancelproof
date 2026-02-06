@@ -46,6 +46,7 @@ import {
 } from '@/utils/subscriptionUtils';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { getCancelByRuleLabel, getIntentLabel } from '@/utils/subscriptionHelpers';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface SubscriptionCardProps {
   subscription: Subscription;
@@ -66,6 +67,7 @@ export function SubscriptionCard({
 }: SubscriptionCardProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const { isPremium } = useAuth();
 
   const matchedGuide = findGuideByName(subscription.name);
   const monthlyEquivalent = calculateMonthlyEquivalent(subscription.amount, subscription.billingPeriod);
@@ -302,6 +304,7 @@ export function SubscriptionCard({
                           targetDate={subscription.cancelByDate}
                           compact
                           className="text-xs"
+                          isPremium={isPremium}
                         />
                       </div>
                     )}

@@ -13,6 +13,12 @@ export function getStripe(): Promise<Stripe | null> {
   return stripePromise;
 }
 
+// Trial configuration
+export const TRIAL_CONFIG = {
+  durationDays: 7,
+  requiresCard: false, // No credit card needed for trial
+};
+
 // Pricing plans
 export const PRICING_PLANS = {
   free: {
@@ -20,8 +26,10 @@ export const PRICING_PLANS = {
     price: 0,
     features: [
       'Track up to 5 subscriptions',
-      'Basic reminders',
-      'Local storage only',
+      'Basic countdown timers',
+      '6 rage post templates',
+      'Browse cancellation guides',
+      'Basic share cards',
     ],
     limits: {
       subscriptions: 5,
@@ -35,10 +43,12 @@ export const PRICING_PLANS = {
     stripePriceIdYearly: import.meta.env.VITE_STRIPE_PRICE_YEARLY,
     features: [
       'Unlimited subscriptions',
+      'Live pulsing countdown timers',
+      'All 16+ rage templates + editing',
+      'Interactive guides with auto-fill',
+      'Premium share cards & custom text',
       'Cloud sync across devices',
-      'Push notifications',
-      'Email reminders',
-      'PDF proof exports',
+      'Push & email reminders',
       'Priority support',
     ],
     limits: {
@@ -85,6 +95,39 @@ export async function createCheckoutSession(
     return { url: data.url };
   } catch (error) {
     return { error: error instanceof Error ? error.message : 'Failed to start checkout. Please try again.' };
+  }
+}
+
+// Start 7-day Pro trial via Supabase Edge Function
+export async function startProTrial(
+  authToken: string
+): Promise<{ success: boolean } | { error: string }> {
+  try {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    if (!supabaseUrl) {
+      throw new Error('Supabase URL not configured');
+    }
+
+    const response = await fetch(`${supabaseUrl}/functions/v1/start-trial`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`,
+      },
+      body: JSON.stringify({
+        trialDays: TRIAL_CONFIG.durationDays,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to start trial');
+    }
+
+    return { success: true };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : 'Failed to start trial. Please try again.' };
   }
 }
 

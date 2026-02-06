@@ -14,6 +14,8 @@ import { format, addDays } from 'date-fns';
 import { computeCancelByDate, getCancelByRuleLabel, getDefaultReminders, getDefaultCancelByRule } from '@/utils/subscriptionHelpers';
 import { findGuideByName, CancellationGuide } from '@/data/cancellationGuides';
 import { getDifficultyLabel } from '@/utils/subscriptionUtils';
+import { useAuth } from '@/contexts/AuthContext';
+import { Crown } from 'lucide-react';
 
 interface AddSubscriptionDialogProps {
   open: boolean;
@@ -34,6 +36,7 @@ export function AddSubscriptionDialog({ open, onOpenChange, onSave, initialData 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [matchedGuide, setMatchedGuide] = useState<CancellationGuide | null>(null);
   const [guideApplied, setGuideApplied] = useState(false);
+  const { isPremium } = useAuth();
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -268,16 +271,29 @@ export function AddSubscriptionDialog({ open, onOpenChange, onSave, initialData 
                           </p>
                         </div>
                       </div>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="default"
-                        className="shrink-0 bg-purple-600 hover:bg-purple-700"
-                        onClick={() => applyGuide(matchedGuide)}
-                      >
-                        <Sparkles className="h-3 w-3 mr-1" />
-                        Auto-Fill
-                      </Button>
+                      {isPremium ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="default"
+                          className="shrink-0 bg-purple-600 hover:bg-purple-700"
+                          onClick={() => applyGuide(matchedGuide)}
+                        >
+                          <Sparkles className="h-3 w-3 mr-1" />
+                          Auto-Fill
+                        </Button>
+                      ) : (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="shrink-0 border-yellow-300 dark:border-yellow-700 text-yellow-700 dark:text-yellow-400"
+                          onClick={() => onOpenChange(false)}
+                        >
+                          <Crown className="h-3 w-3 mr-1" />
+                          Pro
+                        </Button>
+                      )}
                     </div>
                   </div>
                 )}

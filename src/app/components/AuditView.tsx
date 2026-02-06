@@ -9,12 +9,15 @@ import { exportAllSubscriptionsProofBinder } from '@/utils/pdfExport';
 import { getDaysUntilCancelBy } from '@/utils/subscriptionHelpers';
 import { ShareCard } from '@/app/components/ShareCard';
 import { BadgeShowcase } from '@/app/components/BadgeShowcase';
+import { ProTrialBanner } from '@/app/components/ProTrialBanner';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AuditViewProps {
   subscriptions: Subscription[];
 }
 
 export function AuditView({ subscriptions }: AuditViewProps) {
+  const { isPremium, user } = useAuth();
   const activeSubscriptions = subscriptions.filter(sub => sub.status === 'active' || sub.status === 'trial');
   
   // Sort by monthly equivalent cost
@@ -121,6 +124,11 @@ export function AuditView({ subscriptions }: AuditViewProps) {
 
   return (
     <div className="space-y-6">
+      {/* Pro Trial Banner - shown to free authenticated users */}
+      {user && !isPremium && (
+        <ProTrialBanner variant="banner" onDismiss={() => {}} />
+      )}
+
       {/* Overview Stats */}
       <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
         <Card>

@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { CancellationGuide, GuideStep } from '@/data/cancellationGuides';
 import { Badge } from '@/app/components/ui/badge';
 import { Button } from '@/app/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
+import { UpgradePrompt } from '@/app/components/UpgradePrompt';
+import { UPGRADE_PROMPTS } from '@/utils/freemiumGates';
 import {
   Dialog,
   DialogContent,
@@ -32,8 +35,10 @@ interface CancellationGuideViewerProps {
 export function CancellationGuideViewer({ guide, open, onOpenChange }: CancellationGuideViewerProps) {
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [showDarkPatterns, setShowDarkPatterns] = useState(false);
+  const { isPremium } = useAuth();
 
   const toggleStep = (stepNumber: number) => {
+    if (!isPremium) return; // Checkboxes are Pro-only
     const next = new Set(completedSteps);
     if (next.has(stepNumber)) {
       next.delete(stepNumber);
@@ -90,21 +95,29 @@ export function CancellationGuideViewer({ guide, open, onOpenChange }: Cancellat
         </DialogHeader>
 
         <div className="overflow-y-auto min-h-0 space-y-4">
-          {/* Progress Bar */}
-          <div className="space-y-1">
-            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-              <span>{completedSteps.size} of {guide.steps.length} steps</span>
-              <span>{progress}%</span>
+          {/* Progress Bar (Pro: interactive checkboxes) */}
+          {isPremium ? (
+            <div className="space-y-1">
+              <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                <span>{completedSteps.size} of {guide.steps.length} steps</span>
+                <span>{progress}%</span>
+              </div>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div
+                  className={`h-2 rounded-full transition-all duration-500 ${
+                    allComplete ? 'bg-green-500' : 'bg-blue-500'
+                  }`}
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
             </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div
-                className={`h-2 rounded-full transition-all duration-500 ${
-                  allComplete ? 'bg-green-500' : 'bg-blue-500'
-                }`}
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-          </div>
+          ) : (
+            <UpgradePrompt
+              {...UPGRADE_PROMPTS.guideCheckboxes}
+              onUpgrade={() => onOpenChange(false)}
+              variant="inline"
+            />
+          )}
 
           {/* Dark Pattern Warnings */}
           {guide.darkPatterns && guide.darkPatterns.length > 0 && (
@@ -161,8 +174,8 @@ export function CancellationGuideViewer({ guide, open, onOpenChange }: Cancellat
             </div>
           )}
 
-          {/* Tips */}
-          {guide.tips && guide.tips.length > 0 && (
+          {/* Tips (Pro only) */}
+          {isPremium && guide.tips && guide.tips.length > 0 && (
             <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
               <div className="flex items-center gap-2 mb-2">
                 <Lightbulb className="h-4 w-4 text-blue-600 dark:text-blue-400" />

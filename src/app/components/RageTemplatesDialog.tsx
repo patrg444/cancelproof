@@ -1,12 +1,16 @@
 import { useState } from 'react';
 import { Button } from '@/app/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/app/components/ui/dialog';
-import { Flame, Copy, Check, X as XIcon, Share2, Shuffle, Pencil } from 'lucide-react';
+import { Flame, Copy, Check, X as XIcon, Share2, Shuffle, Pencil, Crown } from 'lucide-react';
 import { Subscription } from '@/types/subscription';
 import { formatCurrency, calculateMonthlyEquivalent, getDifficultyLabel } from '@/utils/subscriptionUtils';
 import { RAGE_TEMPLATES, TONE_LABELS, fillTemplate, RageTone } from '@/data/rageTemplates';
 import { toast } from 'sonner';
 import { Textarea } from '@/app/components/ui/textarea';
+import { useAuth } from '@/contexts/AuthContext';
+import { isRageTemplateFree } from '@/utils/freemiumGates';
+import { UpgradePrompt } from '@/app/components/UpgradePrompt';
+import { UPGRADE_PROMPTS } from '@/utils/freemiumGates';
 
 interface RageTemplatesDialogProps {
   subscription: Subscription;
@@ -19,6 +23,7 @@ export function RageTemplatesDialog({ subscription }: RageTemplatesDialogProps) 
   const [editedText, setEditedText] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [copied, setCopied] = useState(false);
+  const { isPremium } = useAuth();
 
   const difficulty = subscription.cancellationDifficulty
     ? getDifficultyLabel(subscription.cancellationDifficulty)
@@ -159,32 +164,49 @@ export function RageTemplatesDialog({ subscription }: RageTemplatesDialogProps) 
               {filteredTemplates.map(template => {
                 const filled = fillTemplate(template.template, templateData);
                 const isSelected = selectedTemplate === template.id;
+                const isLocked = !isPremium && !isRageTemplateFree(template.id);
                 return (
                   <button
                     key={template.id}
-                    onClick={() => handleSelectTemplate(template.id)}
+                    onClick={() => !isLocked && handleSelectTemplate(template.id)}
                     className={`w-full text-left p-3 rounded-lg border text-sm transition-all ${
-                      isSelected
-                        ? 'bg-orange-50 dark:bg-orange-950 border-orange-300 dark:border-orange-700 ring-2 ring-orange-400/50'
-                        : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
+                      isLocked
+                        ? 'border-gray-200 dark:border-gray-700 opacity-60 cursor-not-allowed'
+                        : isSelected
+                          ? 'bg-orange-50 dark:bg-orange-950 border-orange-300 dark:border-orange-700 ring-2 ring-orange-400/50'
+                          : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
                     }`}
                   >
                     <div className="flex items-start gap-2">
                       <span className="text-base shrink-0">{template.emoji}</span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-gray-800 dark:text-gray-200 leading-snug">{filled}</p>
+                        <p className={`leading-snug ${isLocked ? 'text-gray-400 dark:text-gray-500' : 'text-gray-800 dark:text-gray-200'}`}>
+                          {isLocked ? filled.slice(0, 60) + '...' : filled}
+                        </p>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className={`text-[10px] font-medium uppercase tracking-wide ${TONE_LABELS[template.tone].color}`}>
+                          <span className={`text-[10px] font-medium uppercase tracking-wide ${isLocked ? 'text-gray-400' : TONE_LABELS[template.tone].color}`}>
                             {template.tone}
                           </span>
                           <span className="text-[10px] text-gray-400">·</span>
                           <span className="text-[10px] text-gray-400">{template.category}</span>
+                          {isLocked && (
+                            <span className="inline-flex items-center gap-0.5 text-[10px] text-yellow-600 dark:text-yellow-400 font-medium ml-auto">
+                              <Crown className="h-2.5 w-2.5" /> PRO
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
                   </button>
                 );
               })}
+              {!isPremium && (
+                <UpgradePrompt
+                  {...UPGRADE_PROMPTS.rageTemplates}
+                  onUpgrade={() => { setIsOpen(false); toast.info('Open Settings to upgrade to Pro'); }}
+                  variant="inline"
+                />
+              )}
             </div>
 
             {/* Selected template preview / edit */}
@@ -192,15 +214,21 @@ export function RageTemplatesDialog({ subscription }: RageTemplatesDialogProps) 
               <div className="space-y-3 pt-3 border-t">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Your post</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsEditing(!isEditing)}
-                    className="h-7 gap-1 text-xs"
-                  >
-                    <Pencil className="h-3 w-3" />
-                    {isEditing ? 'Preview' : 'Edit'}
-                  </Button>
+                  {isPremium ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsEditing(!isEditing)}
+                      className="h-7 gap-1 text-xs"
+                    >
+                      <Pencil className="h-3 w-3" />
+                      {isEditing ? 'Preview' : 'Edit'}
+                    </Button>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-[10px] text-yellow-600 dark:text-yellow-400">
+                      <Crown className="h-3 w-3" /> Edit with Pro
+                    </span>
+                  )}
                 </div>
 
                 {isEditing ? (

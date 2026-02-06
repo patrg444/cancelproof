@@ -5,6 +5,7 @@ interface CountdownTimerProps {
   targetDate: string;
   className?: string;
   compact?: boolean;
+  isPremium?: boolean; // If false, show static "X days left" instead of live timer
 }
 
 interface TimeRemaining {
@@ -32,10 +33,13 @@ function calculateTimeRemaining(targetDate: string): TimeRemaining {
   return { days, hours, minutes, seconds, total: totalSeconds };
 }
 
-export function CountdownTimer({ targetDate, className = '', compact = false }: CountdownTimerProps) {
+export function CountdownTimer({ targetDate, className = '', compact = false, isPremium = true }: CountdownTimerProps) {
   const [time, setTime] = useState<TimeRemaining>(() => calculateTimeRemaining(targetDate));
 
   useEffect(() => {
+    // Free users: static display, no live updates
+    if (!isPremium) return;
+
     // Update every second if < 1 hour, every minute if < 1 day, every 10 min otherwise
     const intervalMs = time.total <= 3600 ? 1000 : time.total <= 86400 ? 60000 : 600000;
 
@@ -44,12 +48,28 @@ export function CountdownTimer({ targetDate, className = '', compact = false }: 
     }, intervalMs);
 
     return () => clearInterval(interval);
-  }, [targetDate, time.total <= 3600, time.total <= 86400]);
+  }, [targetDate, time.total <= 3600, time.total <= 86400, isPremium]);
 
   if (time.total <= 0) {
     return (
       <span className={`font-mono font-bold text-red-600 dark:text-red-400 ${className}`}>
         Overdue
+      </span>
+    );
+  }
+
+  // Free users: show static "X days left" text
+  if (!isPremium) {
+    const urgencyClass = time.days === 0
+      ? 'text-red-600 dark:text-red-400'
+      : time.days <= 3
+        ? 'text-orange-600 dark:text-orange-400'
+        : time.days <= 7
+          ? 'text-yellow-600 dark:text-yellow-400'
+          : 'text-gray-600 dark:text-gray-400';
+    return (
+      <span className={`font-medium text-xs ${urgencyClass} ${className}`}>
+        {time.days === 0 ? '<1 day' : `${time.days}d left`}
       </span>
     );
   }

@@ -6,8 +6,9 @@ import { Label } from '@/app/components/ui/label';
 import { Separator } from '@/app/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { Bell, Cloud, CreditCard, Download, Trash2, Shield, Loader2, Check, AlertCircle } from 'lucide-react';
+import { Bell, Cloud, CreditCard, Download, Trash2, Shield, Loader2, Check, AlertCircle, Sparkles } from 'lucide-react';
 import { Alert, AlertDescription } from '@/app/components/ui/alert';
+import { ProTrialBanner } from '@/app/components/ProTrialBanner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,7 +33,7 @@ interface SettingsDialogProps {
 }
 
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
-  const { user, isConfigured } = useAuth();
+  const { user, isConfigured, isPremium } = useAuth();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [emailReminders, setEmailReminders] = useState(true);
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
@@ -320,20 +321,61 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   )}
                 </Button>
               </div>
-            ) : (
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+            ) : userSubscription?.status === 'trialing' ? (
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-medium dark:text-white">Free Plan</span>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Current</span>
+                  <span className="font-medium text-blue-800 dark:text-blue-300 flex items-center gap-1.5">
+                    <Sparkles className="h-4 w-4" />
+                    Pro Trial
+                  </span>
+                  <span className="text-sm text-blue-600 dark:text-blue-400">Active</span>
                 </div>
-                <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1 mb-4">
-                  {PRICING_PLANS.free.features.map((feature, i) => (
+                <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1 mb-3">
+                  {PRICING_PLANS.pro.features.map((feature, i) => (
                     <li key={i} className="flex items-center gap-2">
-                      <span className="text-green-500">✓</span>
+                      <span className="text-blue-500">✓</span>
                       {feature}
                     </li>
                   ))}
                 </ul>
+                {userSubscription.current_period_end && (
+                  <p className="text-xs text-blue-600 dark:text-blue-400 mb-3">
+                    Trial ends on {new Date(userSubscription.current_period_end).toLocaleDateString()}
+                  </p>
+                )}
+                <Button
+                  onClick={handleUpgrade}
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    'Upgrade to Keep Pro'
+                  )}
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {/* Trial banner for free users */}
+                {user && <ProTrialBanner variant="card" className="mb-1" />}
+
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-medium dark:text-white">Free Plan</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Current</span>
+                  </div>
+                  <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1 mb-4">
+                    {PRICING_PLANS.free.features.map((feature, i) => (
+                      <li key={i} className="flex items-center gap-2">
+                        <span className="text-green-500">✓</span>
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
 
                 {/* Billing period toggle */}
                 <div className="flex gap-2 mb-3">
@@ -378,6 +420,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     `Upgrade to Pro - $${billingPeriod === 'monthly' ? PRICING_PLANS.pro.priceMonthly + '/mo' : PRICING_PLANS.pro.priceYearly + '/yr'}`
                   )}
                 </Button>
+                </div>
               </div>
             )}
           </div>
