@@ -8,6 +8,7 @@ import { format, parseISO, differenceInDays } from 'date-fns';
 import { exportAllSubscriptionsProofBinder } from '@/utils/pdfExport';
 import { getDaysUntilCancelBy } from '@/utils/subscriptionHelpers';
 import { ShareCard } from '@/app/components/ShareCard';
+import { BadgeShowcase } from '@/app/components/BadgeShowcase';
 
 interface AuditViewProps {
   subscriptions: Subscription[];
@@ -226,6 +227,13 @@ export function AuditView({ subscriptions }: AuditViewProps) {
           </CardContent>
         </Card>
       )}
+
+      {/* Achievements / Badges */}
+      <Card>
+        <CardContent className="pt-6">
+          <BadgeShowcase subscriptions={subscriptions} />
+        </CardContent>
+      </Card>
 
       {/* Cancel-By Deadlines Alert */}
       {cancelByDeadlinesSoon.length > 0 && (
