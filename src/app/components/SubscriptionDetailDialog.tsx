@@ -25,7 +25,7 @@ import {
 import { format, differenceInDays } from 'date-fns';
 import { exportSubscriptionProofBinder } from '@/utils/pdfExport';
 import { getProofStatus, getCancelByRuleLabel, getIntentLabel } from '@/utils/subscriptionHelpers';
-import { formatCurrency } from '@/utils/subscriptionUtils';
+import { formatCurrency, getDifficultyLabel, getDifficultyColor } from '@/utils/subscriptionUtils';
 
 interface SubscriptionDetailDialogProps {
   subscription: Subscription | null;
@@ -114,6 +114,12 @@ export function SubscriptionDetailDialog({
                   />
                 )}
                 <Badge variant="outline">{getIntentLabel(subscription.intent)}</Badge>
+                {subscription.cancellationDifficulty && (
+                  <Badge variant="outline" className={getDifficultyColor(subscription.cancellationDifficulty)}>
+                    {subscription.cancellationDifficulty <= 2 ? '😊' : subscription.cancellationDifficulty === 3 ? '😐' : subscription.cancellationDifficulty === 4 ? '😤' : '🤬'}{' '}
+                    {getDifficultyLabel(subscription.cancellationDifficulty)}
+                  </Badge>
+                )}
               </div>
             </div>
             <div className="text-right shrink-0">
@@ -264,6 +270,23 @@ export function SubscriptionDetailDialog({
                   )}
                 </p>
               </div>
+
+              {subscription.cancellationDifficulty && (
+                <div>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Cancellation Difficulty</label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-xl">
+                      {subscription.cancellationDifficulty <= 2 ? '😊' : subscription.cancellationDifficulty === 3 ? '😐' : subscription.cancellationDifficulty === 4 ? '😤' : '🤬'}
+                    </span>
+                    <span className={`text-sm font-semibold ${getDifficultyColor(subscription.cancellationDifficulty)}`}>
+                      {getDifficultyLabel(subscription.cancellationDifficulty)}
+                    </span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      ({subscription.cancellationDifficulty}/5)
+                    </span>
+                  </div>
+                </div>
+              )}
 
               {subscription.cancellationUrl && (
                 <div>

@@ -19,6 +19,7 @@ export const sampleSubscriptions: Subscription[] = [
     cancellationSteps: '1. Go to Account Settings\n2. Click "Cancel Membership"\n3. Confirm cancellation',
     cancelByNotes: 'Must cancel at least 24 hours before renewal',
     supportContact: 'support@netflix.com',
+    cancellationDifficulty: 1,
     reminders: {
       sevenDays: true,
       threeDays: true,
@@ -55,6 +56,7 @@ export const sampleSubscriptions: Subscription[] = [
     cancellationUrl: 'https://account.adobe.com/',
     cancellationSteps: '1. Sign in to your Adobe account\n2. Go to Plans\n3. Select Cancel Plan\n4. Follow the cancellation wizard',
     supportContact: '1-800-833-6687',
+    cancellationDifficulty: 4,
     reminders: {
       sevenDays: true,
       threeDays: true,
@@ -91,6 +93,7 @@ export const sampleSubscriptions: Subscription[] = [
     cancellationSteps: '1. Send email to support@planetfitness.com\n2. Include your membership number\n3. Request cancellation confirmation\n4. Wait for confirmation email',
     requiredInfo: 'Membership number, email on file',
     supportContact: 'support@planetfitness.com',
+    cancellationDifficulty: 5,
     reminders: {
       sevenDays: true,
       threeDays: true,
@@ -127,6 +130,7 @@ export const sampleSubscriptions: Subscription[] = [
     cancellationDate: subMonths(new Date(), 1).toISOString().split('T')[0],
     cancellationSteps: '1. Go to Account Settings\n2. Click Manage Subscription\n3. Click Cancel Subscription\n4. Screenshot the confirmation page',
     supportContact: '1-800-698-4637',
+    cancellationDifficulty: 3,
     reminders: {
       sevenDays: false,
       threeDays: false,
@@ -319,6 +323,7 @@ export const sampleSubscriptions: Subscription[] = [
     cancellationMethod: 'email',
     cancellationSteps: '1. Email support@vpnpro.com\n2. Request cancellation\n3. Wait for confirmation',
     supportContact: 'support@vpnpro.com',
+    cancellationDifficulty: 5,
     reminders: {
       sevenDays: true,
       threeDays: true,

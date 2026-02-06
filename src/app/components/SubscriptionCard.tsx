@@ -32,9 +32,11 @@ import {
   AlertDialogTitle,
 } from '@/app/components/ui/alert-dialog';
 import { useState } from 'react';
-import { 
-  formatCurrency, 
+import {
+  formatCurrency,
   calculateMonthlyEquivalent,
+  getDifficultyLabel,
+  getDifficultyColor,
 } from '@/utils/subscriptionUtils';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { getCancelByRuleLabel, getIntentLabel } from '@/utils/subscriptionHelpers';
@@ -302,6 +304,18 @@ export function SubscriptionCard({
               }
             </span>
           </div>
+
+          {/* Cancellation Difficulty */}
+          {subscription.cancellationDifficulty && (
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-base">
+                {subscription.cancellationDifficulty <= 2 ? '😊' : subscription.cancellationDifficulty === 3 ? '😐' : subscription.cancellationDifficulty === 4 ? '😤' : '🤬'}
+              </span>
+              <span className={`font-medium ${getDifficultyColor(subscription.cancellationDifficulty)}`}>
+                {getDifficultyLabel(subscription.cancellationDifficulty)} to cancel
+              </span>
+            </div>
+          )}
 
           {/* Cancellation link - now always visible if exists */}
           {subscription.cancellationUrl && (subscription.status === 'active' || subscription.status === 'trial') && (

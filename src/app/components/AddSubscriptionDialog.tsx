@@ -6,7 +6,7 @@ import { Label } from '@/app/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
 import { Checkbox } from '@/app/components/ui/checkbox';
 import { Textarea } from '@/app/components/ui/textarea';
-import { Subscription, BillingPeriod, CancellationMethod, SubscriptionCategory, CancelByRule, TimelineEvent, SubscriptionIntent } from '@/types/subscription';
+import { Subscription, BillingPeriod, CancellationMethod, SubscriptionCategory, CancelByRule, TimelineEvent, SubscriptionIntent, CancellationDifficulty } from '@/types/subscription';
 import { Calendar } from '@/app/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/app/components/ui/popover';
 import { CalendarIcon, ChevronRight, ChevronLeft, Info } from 'lucide-react';
@@ -395,6 +395,31 @@ export function AddSubscriptionDialog({ open, onOpenChange, onSave, initialData 
                 </Select>
               </div>
               
+              <div className="space-y-2">
+                <Label>Cancellation Difficulty</Label>
+                <div className="flex gap-1">
+                  {([1, 2, 3, 4, 5] as CancellationDifficulty[]).map((rating) => (
+                    <button
+                      key={rating}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, cancellationDifficulty: formData.cancellationDifficulty === rating ? undefined : rating })}
+                      className={`flex-1 py-2 px-1 text-sm rounded-lg border transition-all ${
+                        formData.cancellationDifficulty === rating
+                          ? rating <= 2
+                            ? 'bg-green-50 dark:bg-green-900/30 border-green-300 dark:border-green-700 text-green-700 dark:text-green-300 ring-2 ring-green-400/50'
+                            : rating === 3
+                              ? 'bg-yellow-50 dark:bg-yellow-900/30 border-yellow-300 dark:border-yellow-700 text-yellow-700 dark:text-yellow-300 ring-2 ring-yellow-400/50'
+                              : 'bg-red-50 dark:bg-red-900/30 border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 ring-2 ring-red-400/50'
+                          : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                      }`}
+                    >
+                      <div className="text-lg">{rating <= 2 ? '😊' : rating === 3 ? '😐' : rating === 4 ? '😤' : '🤬'}</div>
+                      <div className="text-[10px] mt-0.5">{['Easy', 'Simple', 'Medium', 'Hard', 'Hell'][rating - 1]}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="url">Cancellation URL</Label>
                 <Input

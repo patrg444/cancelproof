@@ -14,6 +14,9 @@ export type SubscriptionCategory =
 // User's intent for the subscription
 export type SubscriptionIntent = 'keep' | 'trial' | 'cancel-soon';
 
+// Cancellation difficulty rating (1-5, crowdsource-able)
+export type CancellationDifficulty = 1 | 2 | 3 | 4 | 5;
+
 // Cancel-by rule type - defines how the cancel-by deadline is computed
 export type CancelByRule = 
   | 'anytime'           // Can cancel anytime, no deadline
@@ -100,6 +103,9 @@ export interface Subscription {
   cancellationDate?: string; // When user confirmed it was cancelled
   cancelAttemptDate?: string; // When user tried but wasn't sure it worked (NEW)
   
+  // Cancellation difficulty (1=easy, 5=nightmare)
+  cancellationDifficulty?: CancellationDifficulty;
+
   // Metadata
   createdAt: string;
   updatedAt: string;

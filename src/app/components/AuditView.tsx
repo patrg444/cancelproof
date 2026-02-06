@@ -2,11 +2,12 @@ import { Subscription } from '@/types/subscription';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
 import { Badge } from '@/app/components/ui/badge';
 import { Button } from '@/app/components/ui/button';
-import { AlertTriangle, TrendingUp, Calendar, DollarSign, Download, FileText, AlertCircle } from 'lucide-react';
-import { formatCurrency, calculateMonthlyEquivalent, getDaysUntilRenewal } from '@/utils/subscriptionUtils';
+import { AlertTriangle, TrendingUp, Calendar, DollarSign, Download, FileText, AlertCircle, PartyPopper } from 'lucide-react';
+import { formatCurrency, calculateMonthlyEquivalent, getDaysUntilRenewal, calculateSavings } from '@/utils/subscriptionUtils';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { exportAllSubscriptionsProofBinder } from '@/utils/pdfExport';
 import { getDaysUntilCancelBy } from '@/utils/subscriptionHelpers';
+import { ShareCard } from '@/app/components/ShareCard';
 
 interface AuditViewProps {
   subscriptions: Subscription[];
@@ -68,6 +69,9 @@ export function AuditView({ subscriptions }: AuditViewProps) {
     acc[sub.currency] = (acc[sub.currency] || 0) + monthly;
     return acc;
   }, {} as Record<string, number>);
+
+  // Calculate savings from cancelled subscriptions
+  const savings = calculateSavings(subscriptions);
 
   const handleExportCSV = () => {
     const headers = [
@@ -173,6 +177,55 @@ export function AuditView({ subscriptions }: AuditViewProps) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Savings Callout */}
+      {savings.cancelledCount > 0 && (
+        <Card className="border-green-200 dark:border-green-800 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="h-14 w-14 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center">
+                  <PartyPopper className="h-7 w-7 text-green-600 dark:text-green-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-green-800 dark:text-green-300">
+                    You&apos;re saving
+                  </p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-black text-green-700 dark:text-green-300">
+                      {formatCurrency(savings.totalYearlySaved, savings.currency)}
+                    </span>
+                    <span className="text-lg text-green-600 dark:text-green-400 font-medium">/year</span>
+                  </div>
+                  <p className="text-sm text-green-600 dark:text-green-400">
+                    by cancelling {savings.cancelledCount} subscription{savings.cancelledCount !== 1 ? 's' : ''}
+                    {' '}&middot;{' '}
+                    {formatCurrency(savings.totalMonthlySaved, savings.currency)}/month
+                  </p>
+                </div>
+              </div>
+              <ShareCard savings={savings} totalActive={activeSubscriptions.length} />
+            </div>
+
+            {/* Individual cancelled subs breakdown */}
+            {savings.cancelledSubscriptions.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-green-200 dark:border-green-800">
+                <div className="flex flex-wrap gap-3">
+                  {savings.cancelledSubscriptions.map((sub, i) => (
+                    <div key={i} className="flex items-center gap-2 bg-green-100 dark:bg-green-900/30 rounded-full px-3 py-1.5">
+                      <span className="text-green-600 dark:text-green-400 text-xs">✓</span>
+                      <span className="text-sm font-medium text-green-800 dark:text-green-200">{sub.name}</span>
+                      <span className="text-xs text-green-600 dark:text-green-400">
+                        {formatCurrency(sub.monthlySaved, sub.currency)}/mo
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Cancel-By Deadlines Alert */}
       {cancelByDeadlinesSoon.length > 0 && (

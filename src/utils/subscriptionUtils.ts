@@ -204,3 +204,83 @@ export function downloadFile(content: string, filename: string, type: string) {
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
+
+// ============================================================
+// Savings calculations
+// ============================================================
+
+export interface SavingsBreakdown {
+  totalMonthlySaved: number;
+  totalYearlySaved: number;
+  cancelledCount: number;
+  cancelledSubscriptions: Array<{
+    name: string;
+    monthlySaved: number;
+    currency: string;
+    cancellationDate?: string;
+  }>;
+  currency: string; // Primary currency for display
+}
+
+/**
+ * Calculate money saved by cancelling subscriptions.
+ * Looks at all cancelled + cancel-attempted subscriptions and computes
+ * how much the user would have been paying monthly/yearly if they hadn't cancelled.
+ */
+export function calculateSavings(subscriptions: Subscription[]): SavingsBreakdown {
+  const cancelledSubs = subscriptions.filter(
+    s => s.status === 'cancelled' || s.status === 'cancel-attempted'
+  );
+
+  // Determine primary currency (most common among all subs)
+  const currencyCounts = subscriptions.reduce((acc, s) => {
+    acc[s.currency] = (acc[s.currency] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  const primaryCurrency = Object.entries(currencyCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'USD';
+
+  const cancelledDetails = cancelledSubs.map(sub => ({
+    name: sub.name,
+    monthlySaved: calculateMonthlyEquivalent(sub.amount, sub.billingPeriod),
+    currency: sub.currency,
+    cancellationDate: sub.cancellationDate || sub.cancelAttemptDate,
+  }));
+
+  const totalMonthlySaved = cancelledDetails.reduce((acc, s) => acc + s.monthlySaved, 0);
+
+  return {
+    totalMonthlySaved,
+    totalYearlySaved: totalMonthlySaved * 12,
+    cancelledCount: cancelledSubs.length,
+    cancelledSubscriptions: cancelledDetails,
+    currency: primaryCurrency,
+  };
+}
+
+/**
+ * Get a difficulty label for the 1-5 rating
+ */
+export function getDifficultyLabel(rating: number): string {
+  switch (rating) {
+    case 1: return 'Easy';
+    case 2: return 'Simple';
+    case 3: return 'Moderate';
+    case 4: return 'Difficult';
+    case 5: return 'Nightmare';
+    default: return 'Unknown';
+  }
+}
+
+/**
+ * Get difficulty color class
+ */
+export function getDifficultyColor(rating: number): string {
+  switch (rating) {
+    case 1: return 'text-green-600 dark:text-green-400';
+    case 2: return 'text-green-500 dark:text-green-400';
+    case 3: return 'text-yellow-600 dark:text-yellow-400';
+    case 4: return 'text-orange-600 dark:text-orange-400';
+    case 5: return 'text-red-600 dark:text-red-400';
+    default: return 'text-gray-500';
+  }
+}
