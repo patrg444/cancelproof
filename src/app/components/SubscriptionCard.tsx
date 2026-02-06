@@ -3,9 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/ca
 import { Badge } from '@/app/components/ui/badge';
 import { Button } from '@/app/components/ui/button';
 import { ProofStatusBadge } from '@/app/components/ProofStatusBadge';
-import { 
-  MoreVertical, 
-  ExternalLink, 
+import {
+  MoreVertical,
+  ExternalLink,
   Calendar,
   AlertCircle,
   Edit,
@@ -13,8 +13,11 @@ import {
   CheckCircle2,
   FileText,
   Plus,
-  MapPin
+  MapPin,
+  Timer
 } from 'lucide-react';
+import { CountdownTimer } from '@/app/components/CountdownTimer';
+import { RageTemplatesDialog } from '@/app/components/RageTemplatesDialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -249,11 +252,11 @@ export function SubscriptionCard({
             )}
           </div>
 
-          {/* Cancel-by date - show for all active/trial, but style based on intent */}
+          {/* Cancel-by date with countdown timer */}
           {(subscription.status === 'active' || subscription.status === 'trial') && (
             <>
               {subscription.intent !== 'keep' ? (
-                <div className={`flex items-center gap-2 text-sm p-2 rounded ${
+                <div className={`text-sm p-2 rounded ${
                   urgency === 'today' || urgency === 'urgent'
                     ? 'bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800'
                     : urgency === 'soon'
@@ -262,23 +265,38 @@ export function SubscriptionCard({
                     ? 'bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800'
                     : 'bg-gray-50 dark:bg-gray-800'
                 }`}>
-                  <AlertCircle className={`h-4 w-4 ${
-                    urgency === 'today' || urgency === 'urgent' ? 'text-red-600' :
-                    urgency === 'soon' ? 'text-orange-600' :
-                    urgency === 'upcoming' ? 'text-yellow-600' : 
-                    'text-gray-600'
-                  }`} />
-                  <div className="flex-1">
-                    <div className="font-medium text-xs">Cancel by</div>
-                    <div className="text-sm">
-                      {subscription.cancelByRule === 'anytime' ? 'Anytime' : format(cancelByDate, 'MMM d, yyyy')}
-                      {daysUntilCancelBy === 0 && ' (Today!)'}
-                      {daysUntilCancelBy === 1 && ' (Tomorrow)'}
-                      {daysUntilCancelBy > 1 && daysUntilCancelBy <= 7 && ` (${daysUntilCancelBy}d)`}
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className={`h-4 w-4 shrink-0 ${
+                      urgency === 'today' || urgency === 'urgent' ? 'text-red-600' :
+                      urgency === 'soon' ? 'text-orange-600' :
+                      urgency === 'upcoming' ? 'text-yellow-600' :
+                      'text-gray-600'
+                    }`} />
+                    <div className="flex-1">
+                      <div className="font-medium text-xs">Cancel by</div>
+                      <div className="text-sm">
+                        {subscription.cancelByRule === 'anytime' ? 'Anytime' : format(cancelByDate, 'MMM d, yyyy')}
+                      </div>
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                      {getCancelByRuleLabel(subscription.cancelByRule)}
-                    </div>
+                    {/* Live countdown timer */}
+                    {subscription.cancelByRule !== 'anytime' && daysUntilCancelBy >= 0 && daysUntilCancelBy <= 30 && (
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Timer className={`h-3 w-3 ${
+                          urgency === 'today' || urgency === 'urgent' ? 'text-red-500' :
+                          urgency === 'soon' ? 'text-orange-500' :
+                          urgency === 'upcoming' ? 'text-yellow-500' :
+                          'text-gray-500'
+                        }`} />
+                        <CountdownTimer
+                          targetDate={subscription.cancelByDate}
+                          compact
+                          className="text-xs"
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 ml-6">
+                    {getCancelByRuleLabel(subscription.cancelByRule)}
                   </div>
                 </div>
               ) : (
@@ -350,20 +368,22 @@ export function SubscriptionCard({
             </div>
           )}
 
-          {/* Proof action for cancelled/cancel-attempted subscriptions */}
-          {(subscription.status === 'cancelled' || subscription.status === 'cancel-attempted') && 
-           (subscription.proofStatus === 'missing' || subscription.proofStatus === 'incomplete') && 
-           onAddProof && (
-            <div className="pt-2 border-t">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950"
-                onClick={() => onAddProof(subscription)}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Proof
-              </Button>
+          {/* Proof action + Rage Post for cancelled/cancel-attempted subscriptions */}
+          {(subscription.status === 'cancelled' || subscription.status === 'cancel-attempted') && (
+            <div className="flex gap-2 pt-2 border-t">
+              {(subscription.proofStatus === 'missing' || subscription.proofStatus === 'incomplete') &&
+               onAddProof && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950"
+                  onClick={() => onAddProof(subscription)}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Proof
+                </Button>
+              )}
+              <RageTemplatesDialog subscription={subscription} />
             </div>
           )}
         </div>

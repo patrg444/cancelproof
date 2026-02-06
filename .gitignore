@@ -21,6 +21,7 @@ unified-credentials.json
 dist/
 build/
 out/
+.next/
 
 # IDE and editor files
 .idea/
