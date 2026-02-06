@@ -202,7 +202,7 @@ export default function App() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
         <LoadingState message="Authenticating..." />
       </div>
     );
@@ -212,7 +212,7 @@ export default function App() {
 
   if (showLanding) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <Toaster position="top-right" />
 
         <LandingPage
@@ -237,11 +237,11 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <Toaster position="top-right" />
 
       {/* Header */}
-      <header className="bg-white border-b">
+      <header className="bg-white dark:bg-gray-900 border-b dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -251,8 +251,8 @@ export default function App() {
                 </svg>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">CancelMem</h1>
-                <div className="flex items-center gap-2 text-sm text-gray-500">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">CancelMem</h1>
+                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                   {isCloudEnabled ? (
                     <>
                       <Cloud className="h-3 w-3 text-green-500" />
@@ -272,16 +272,16 @@ export default function App() {
               {/* Notification button */}
               {notificationPermission !== 'granted' && (
                 <Button variant="outline" size="sm" onClick={handleEnableNotifications}>
-                  <Bell className="h-4 w-4 mr-2" />
-                  Enable Reminders
+                  <Bell className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Enable Reminders</span>
                 </Button>
               )}
 
               {/* Add subscription button */}
               <Button onClick={handleOpenAddDialog} disabled={!canAddSubscription}>
-                <Plus className="h-5 w-5 mr-2" />
-                Add Subscription
-                {!isPremium && !canAddSubscription && <Crown className="h-3 w-3 ml-2 text-yellow-400" />}
+                <Plus className="h-5 w-5 sm:mr-2" />
+                <span className="hidden sm:inline">Add Subscription</span>
+                {!isPremium && !canAddSubscription && <Crown className="h-3 w-3 ml-1 sm:ml-2 text-yellow-400" />}
               </Button>
 
               {/* User menu */}
@@ -294,7 +294,7 @@ export default function App() {
                 <DropdownMenuContent align="end" className="w-56">
                   {user ? (
                     <>
-                      <div className="px-2 py-1.5 text-sm text-gray-500">
+                      <div className="px-2 py-1.5 text-sm text-gray-500 dark:text-gray-400">
                         {user.email}
                       </div>
                       <DropdownMenuSeparator />
@@ -331,14 +331,14 @@ export default function App() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Upgrade Banner for Free Users Near Limit */}
         {!isPremium && subscriptions.length >= FREE_SUBSCRIPTION_LIMIT && (
-          <Alert className="mb-6 bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
-            <Crown className="h-4 w-4 text-blue-600" />
-            <AlertDescription className="flex items-center justify-between">
-              <span>
+          <Alert className="mb-6 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950 border-blue-200 dark:border-blue-800">
+            <Crown className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <AlertDescription className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <span className="dark:text-blue-200">
                 You've reached the free plan limit of {FREE_SUBSCRIPTION_LIMIT} subscriptions.
-                Upgrade to Premium for unlimited tracking, analytics, and export features.
+                Upgrade for unlimited tracking and export.
               </span>
-              <Button size="sm" className="ml-4 bg-blue-600 hover:bg-blue-700" onClick={() => setIsSettingsDialogOpen(true)}>
+              <Button size="sm" className="bg-blue-600 hover:bg-blue-700 whitespace-nowrap self-start sm:self-auto" onClick={() => setIsSettingsDialogOpen(true)}>
                 Upgrade to Premium
               </Button>
             </AlertDescription>
@@ -347,7 +347,7 @@ export default function App() {
 
         {/* Subscription count for free users */}
         {!isPremium && subscriptions.length > 0 && subscriptions.length < FREE_SUBSCRIPTION_LIMIT && (
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
             {subscriptionsRemaining} of {FREE_SUBSCRIPTION_LIMIT} free subscriptions remaining
           </p>
         )}

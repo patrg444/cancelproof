@@ -174,15 +174,15 @@ export function SubscriptionList({
           // Empty state - no subscriptions at all
           <div className="text-center py-16 px-4">
             <div className="max-w-md mx-auto">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FileText className="h-8 w-8 text-gray-400" />
+              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FileText className="h-8 w-8 text-gray-400 dark:text-gray-500" />
               </div>
               <h3 className="text-xl font-semibold mb-2">No subscriptions yet</h3>
               <p className="text-sm text-muted-foreground mb-6">
                 Add your first subscription to start tracking cancel-by dates and storing proof. CancelMem helps you never miss a cancellation deadline.
               </p>
-              <div className="space-y-2 text-xs text-left text-muted-foreground bg-gray-50 rounded-lg p-4">
-                <p className="font-medium text-gray-900">How it works:</p>
+              <div className="space-y-2 text-xs text-left text-muted-foreground bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                <p className="font-medium text-gray-900 dark:text-gray-100">How it works:</p>
                 <ol className="list-decimal list-inside space-y-1 ml-2">
                   <li>Add subscriptions with cancel-by dates</li>
                   <li>Get reminded before deadlines</li>

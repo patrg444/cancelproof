@@ -99,54 +99,54 @@ export function ActionPanel({ subscriptions, onSubscriptionClick, onMarkCancelle
     <div className="space-y-6">
       {/* Action Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="border-orange-200 bg-orange-50">
+        <Card className="border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-950">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-orange-900">Cancel-By Deadlines</p>
-                <p className="text-3xl font-bold text-orange-600 mt-2">{cancelByDueSoon.length}</p>
-                <p className="text-xs text-orange-700 mt-1">Next 7 days</p>
+                <p className="text-sm font-medium text-orange-900 dark:text-orange-200">Cancel-By Deadlines</p>
+                <p className="text-3xl font-bold text-orange-600 dark:text-orange-400 mt-2">{cancelByDueSoon.length}</p>
+                <p className="text-xs text-orange-700 dark:text-orange-300 mt-1">Next 7 days</p>
               </div>
-              <AlertCircle className="h-12 w-12 text-orange-400" />
+              <AlertCircle className="h-12 w-12 text-orange-400 dark:text-orange-500" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-purple-200 bg-purple-50">
+        <Card className="border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-950">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-purple-900">Trials Ending</p>
-                <p className="text-3xl font-bold text-purple-600 mt-2">{trialsNeedingDecision.length}</p>
-                <p className="text-xs text-purple-700 mt-1">Need decision</p>
+                <p className="text-sm font-medium text-purple-900 dark:text-purple-200">Trials Ending</p>
+                <p className="text-3xl font-bold text-purple-600 dark:text-purple-400 mt-2">{trialsNeedingDecision.length}</p>
+                <p className="text-xs text-purple-700 dark:text-purple-300 mt-1">Need decision</p>
               </div>
-              <Clock className="h-12 w-12 text-purple-400" />
+              <Clock className="h-12 w-12 text-purple-400 dark:text-purple-500" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-blue-200 bg-blue-50">
+        <Card className="border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-blue-900">Charges at Risk</p>
-                <p className="text-3xl font-bold text-blue-600 mt-2">{chargesAtRisk.length}</p>
-                <p className="text-xs text-blue-700 mt-1">Not cancelled yet</p>
+                <p className="text-sm font-medium text-blue-900 dark:text-blue-200">Charges at Risk</p>
+                <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 mt-2">{chargesAtRisk.length}</p>
+                <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">Not cancelled yet</p>
               </div>
-              <Calendar className="h-12 w-12 text-blue-400" />
+              <Calendar className="h-12 w-12 text-blue-400 dark:text-blue-500" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-red-200 bg-red-50">
+        <Card className="border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-red-900">Proof Missing</p>
-                <p className="text-3xl font-bold text-red-600 mt-2">{proofMissing.length}</p>
-                <p className="text-xs text-red-700 mt-1">Needs attention</p>
+                <p className="text-sm font-medium text-red-900 dark:text-red-200">Proof Missing</p>
+                <p className="text-3xl font-bold text-red-600 dark:text-red-400 mt-2">{proofMissing.length}</p>
+                <p className="text-xs text-red-700 dark:text-red-300 mt-1">Needs attention</p>
               </div>
-              <FileText className="h-12 w-12 text-red-400" />
+              <FileText className="h-12 w-12 text-red-400 dark:text-red-500" />
             </div>
           </CardContent>
         </Card>
@@ -166,7 +166,7 @@ export function ActionPanel({ subscriptions, onSubscriptionClick, onMarkCancelle
               {urgentItems.map(({ subscription, daysUntilCancelBy }) => (
                 <div
                   key={subscription.id}
-                  className="flex items-center justify-between gap-4 p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex items-center justify-between gap-4 p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -181,7 +181,7 @@ export function ActionPanel({ subscriptions, onSubscriptionClick, onMarkCancelle
                          `${daysUntilCancelBy}d left`}
                       </Badge>
                     </div>
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600">
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600 dark:text-gray-400">
                       <span className="flex items-center gap-1">
                         <AlertCircle className="h-3 w-3" />
                         Cancel by: {format(new Date(subscription.cancelByDate), 'MMM d, yyyy')}
@@ -245,12 +245,12 @@ export function ActionPanel({ subscriptions, onSubscriptionClick, onMarkCancelle
               {trialItems.map(({ subscription, daysUntilTrialEnd }) => (
                 <div
                   key={subscription.id}
-                  className="flex items-center justify-between gap-4 p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex items-center justify-between gap-4 p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <h4 className="font-medium truncate">{subscription.name}</h4>
-                      <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                      <Badge variant="outline" className="bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700">
                         Trial
                       </Badge>
                       <Badge variant={daysUntilTrialEnd <= 1 ? 'destructive' : 'default'}>
@@ -259,7 +259,7 @@ export function ActionPanel({ subscriptions, onSubscriptionClick, onMarkCancelle
                          `${daysUntilTrialEnd}d left`}
                       </Badge>
                     </div>
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600">
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600 dark:text-gray-400">
                       <span className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
                         Trial ends: {format(new Date(subscription.trialEndDate!), 'MMM d, yyyy')}
@@ -323,7 +323,7 @@ export function ActionPanel({ subscriptions, onSubscriptionClick, onMarkCancelle
               {proofMissing.map(subscription => (
                 <div
                   key={subscription.id}
-                  className="flex items-center justify-between gap-4 p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex items-center justify-between gap-4 p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
@@ -336,7 +336,7 @@ export function ActionPanel({ subscriptions, onSubscriptionClick, onMarkCancelle
                         <Badge variant="destructive">Attempt Unconfirmed</Badge>
                       )}
                     </div>
-                    <p className="text-xs text-gray-600">
+                    <p className="text-xs text-gray-600 dark:text-gray-400">
                       {subscription.status === 'cancel-attempted' 
                         ? `Attempted on ${format(new Date(subscription.cancelAttemptDate || subscription.updatedAt), 'MMM d, yyyy')}`
                         : `Cancelled on ${format(new Date(subscription.cancellationDate || subscription.updatedAt), 'MMM d, yyyy')}`
@@ -364,7 +364,7 @@ export function ActionPanel({ subscriptions, onSubscriptionClick, onMarkCancelle
           <CardContent className="py-12 text-center">
             <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">All Clear!</h3>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               No urgent actions needed in the next 7 days.
             </p>
           </CardContent>

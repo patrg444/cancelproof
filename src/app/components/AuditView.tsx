@@ -176,24 +176,24 @@ export function AuditView({ subscriptions }: AuditViewProps) {
 
       {/* Cancel-By Deadlines Alert */}
       {cancelByDeadlinesSoon.length > 0 && (
-        <Card className="border-orange-200 bg-orange-50">
+        <Card className="border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-950">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-orange-600" />
-              <CardTitle className="text-orange-900">Cancel-By Deadlines Approaching</CardTitle>
+              <AlertCircle className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+              <CardTitle className="text-orange-900 dark:text-orange-200">Cancel-By Deadlines Approaching</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               {cancelByDeadlinesSoon.map(sub => (
-                <div key={sub.id} className="flex items-center justify-between py-2 border-b border-orange-200 last:border-0">
+                <div key={sub.id} className="flex items-center justify-between py-2 border-b border-orange-200 dark:border-orange-800 last:border-0">
                   <div>
-                    <p className="font-medium text-orange-900">{sub.name}</p>
-                    <p className="text-sm text-orange-700">
+                    <p className="font-medium text-orange-900 dark:text-orange-200">{sub.name}</p>
+                    <p className="text-sm text-orange-700 dark:text-orange-300">
                       {sub.daysUntil === 0 ? 'Deadline today!' : `${sub.daysUntil} day${sub.daysUntil !== 1 ? 's' : ''} until deadline`}
                     </p>
                   </div>
-                  <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-300">
+                  <Badge variant="outline" className="bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-300 border-orange-300 dark:border-orange-700">
                     {format(parseISO(sub.cancelByDate), 'MMM d')}
                   </Badge>
                 </div>
@@ -205,24 +205,24 @@ export function AuditView({ subscriptions }: AuditViewProps) {
 
       {/* Proof Issues Alert */}
       {proofIssues.length > 0 && (
-        <Card className="border-red-200 bg-red-50">
+        <Card className="border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-red-600" />
-              <CardTitle className="text-red-900">Proof Missing or Incomplete</CardTitle>
+              <FileText className="h-5 w-5 text-red-600 dark:text-red-400" />
+              <CardTitle className="text-red-900 dark:text-red-200">Proof Missing or Incomplete</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               {proofIssues.map(sub => (
-                <div key={sub.id} className="flex items-center justify-between py-2 border-b border-red-200 last:border-0">
+                <div key={sub.id} className="flex items-center justify-between py-2 border-b border-red-200 dark:border-red-800 last:border-0">
                   <div>
-                    <p className="font-medium text-red-900">{sub.name}</p>
-                    <p className="text-sm text-red-700">
+                    <p className="font-medium text-red-900 dark:text-red-200">{sub.name}</p>
+                    <p className="text-sm text-red-700 dark:text-red-300">
                       {sub.status === 'cancel-attempted' ? 'Cancel attempted - needs proof' : 'Cancelled - needs proof'}
                     </p>
                   </div>
-                  <Badge variant="outline" className="bg-red-100 text-red-800 border-red-300">
+                  <Badge variant="outline" className="bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 border-red-300 dark:border-red-700">
                     {sub.proofStatus}
                   </Badge>
                 </div>
@@ -234,24 +234,24 @@ export function AuditView({ subscriptions }: AuditViewProps) {
       
       {/* Alerts */}
       {trialsEndingSoon.length > 0 && (
-        <Card className="border-blue-200 bg-blue-50">
+        <Card className="border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-blue-600" />
-              <CardTitle className="text-blue-900">Trials Ending Soon</CardTitle>
+              <AlertTriangle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <CardTitle className="text-blue-900 dark:text-blue-200">Trials Ending Soon</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               {trialsEndingSoon.map(sub => (
-                <div key={sub.id} className="flex items-center justify-between py-2 border-b border-blue-200 last:border-0">
+                <div key={sub.id} className="flex items-center justify-between py-2 border-b border-blue-200 dark:border-blue-800 last:border-0">
                   <div>
-                    <p className="font-medium text-blue-900">{sub.name}</p>
-                    <p className="text-sm text-blue-700">
+                    <p className="font-medium text-blue-900 dark:text-blue-200">{sub.name}</p>
+                    <p className="text-sm text-blue-700 dark:text-blue-300">
                       {sub.daysUntil === 0 ? 'Ends today' : `Ends in ${sub.daysUntil} day${sub.daysUntil !== 1 ? 's' : ''}`}
                     </p>
                   </div>
-                  <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
+                  <Badge variant="outline" className="bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-700">
                     {sub.trialEndDate && format(parseISO(sub.trialEndDate), 'MMM d')}
                   </Badge>
                 </div>
@@ -294,12 +294,12 @@ export function AuditView({ subscriptions }: AuditViewProps) {
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{sub.name}</span>
                         {sub.status === 'trial' && (
-                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
+                          <Badge variant="outline" className="bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700 text-xs">
                             Trial
                           </Badge>
                         )}
                         {sub.intent === 'cancel-soon' && (
-                          <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 text-xs">
+                          <Badge variant="outline" className="bg-orange-50 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700 text-xs">
                             Cancel Soon
                           </Badge>
                         )}
@@ -313,7 +313,7 @@ export function AuditView({ subscriptions }: AuditViewProps) {
                       <p className="text-sm text-muted-foreground">{percentage.toFixed(1)}%</p>
                     </div>
                   </div>
-                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-blue-500 rounded-full transition-all"
                       style={{ width: `${percentage}%` }}
@@ -342,7 +342,7 @@ export function AuditView({ subscriptions }: AuditViewProps) {
               {upcomingRenewals.map(sub => (
                 <div key={sub.id} className="flex items-center justify-between py-3 border-b last:border-0">
                   <div className="flex items-center gap-4">
-                    <div className="flex flex-col items-center justify-center w-16 h-16 rounded-lg bg-gray-50 border">
+                    <div className="flex flex-col items-center justify-center w-16 h-16 rounded-lg bg-gray-50 dark:bg-gray-800 border dark:border-gray-700">
                       <span className="text-2xl font-bold">{format(parseISO(sub.renewalDate), 'd')}</span>
                       <span className="text-xs text-muted-foreground">{format(parseISO(sub.renewalDate), 'MMM')}</span>
                     </div>

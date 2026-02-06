@@ -75,13 +75,13 @@ export function SubscriptionCard({
   };
 
   const categoryColors: Record<string, string> = {
-    streaming: 'bg-purple-100 text-purple-700',
-    software: 'bg-blue-100 text-blue-700',
-    fitness: 'bg-green-100 text-green-700',
-    productivity: 'bg-indigo-100 text-indigo-700',
-    news: 'bg-yellow-100 text-yellow-700',
-    gaming: 'bg-pink-100 text-pink-700',
-    other: 'bg-gray-100 text-gray-700',
+    streaming: 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300',
+    software: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
+    fitness: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300',
+    productivity: 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300',
+    news: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300',
+    gaming: 'bg-pink-100 dark:bg-pink-900/40 text-pink-700 dark:text-pink-300',
+    other: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300',
   };
 
   const handleCancellationLink = () => {
@@ -119,13 +119,13 @@ export function SubscriptionCard({
   const getIntentBadgeStyle = () => {
     switch (subscription.intent) {
       case 'keep':
-        return 'bg-green-50 text-green-700 border-green-200';
+        return 'bg-green-50 dark:bg-green-900/40 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700';
       case 'trial':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
+        return 'bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700';
       case 'cancel-soon':
-        return 'bg-orange-50 text-orange-700 border-orange-200';
+        return 'bg-orange-50 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700';
       default:
-        return 'bg-gray-50 text-gray-700 border-gray-200';
+        return 'bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700';
     }
   };
 
@@ -146,7 +146,7 @@ export function SubscriptionCard({
 
               {/* Status badges */}
               {subscription.status === 'cancelled' && (
-                <Badge variant="outline" className="bg-gray-50 text-gray-700">
+                <Badge variant="outline" className="bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
                   Cancelled
                 </Badge>
               )}
@@ -158,7 +158,7 @@ export function SubscriptionCard({
 
               {/* Cancellation ready indicator */}
               {hasCancellationRoute && (subscription.status === 'active' || subscription.status === 'trial') && (
-                <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-300 text-xs">
+                <Badge variant="outline" className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600 text-xs">
                   <MapPin className="h-3 w-3 mr-1" />
                   Route ready
                 </Badge>
@@ -252,13 +252,13 @@ export function SubscriptionCard({
             <>
               {subscription.intent !== 'keep' ? (
                 <div className={`flex items-center gap-2 text-sm p-2 rounded ${
-                  urgency === 'today' || urgency === 'urgent' 
-                    ? 'bg-red-50 border border-red-200' 
-                    : urgency === 'soon' 
-                    ? 'bg-orange-50 border border-orange-200'
+                  urgency === 'today' || urgency === 'urgent'
+                    ? 'bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800'
+                    : urgency === 'soon'
+                    ? 'bg-orange-50 dark:bg-orange-950 border border-orange-200 dark:border-orange-800'
                     : urgency === 'upcoming'
-                    ? 'bg-yellow-50 border border-yellow-200'
-                    : 'bg-gray-50'
+                    ? 'bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800'
+                    : 'bg-gray-50 dark:bg-gray-800'
                 }`}>
                   <AlertCircle className={`h-4 w-4 ${
                     urgency === 'today' || urgency === 'urgent' ? 'text-red-600' :
@@ -274,13 +274,13 @@ export function SubscriptionCard({
                       {daysUntilCancelBy === 1 && ' (Tomorrow)'}
                       {daysUntilCancelBy > 1 && daysUntilCancelBy <= 7 && ` (${daysUntilCancelBy}d)`}
                     </div>
-                    <div className="text-xs text-gray-500 mt-0.5">
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                       {getCancelByRuleLabel(subscription.cancelByRule)}
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center gap-2 text-sm text-gray-500">
+                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                   <AlertCircle className="h-4 w-4" />
                   <span>Cancel by: {subscription.cancelByRule === 'anytime' ? 'Anytime' : format(cancelByDate, 'MMM d, yyyy')} ({getCancelByRuleLabel(subscription.cancelByRule)})</span>
                 </div>
@@ -344,7 +344,7 @@ export function SubscriptionCard({
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="w-full border-red-200 text-red-700 hover:bg-red-50"
+                className="w-full border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950"
                 onClick={() => onAddProof(subscription)}
               >
                 <Plus className="h-4 w-4 mr-2" />
