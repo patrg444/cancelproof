@@ -9,9 +9,11 @@ import { Textarea } from '@/app/components/ui/textarea';
 import { Subscription, BillingPeriod, CancellationMethod, SubscriptionCategory, CancelByRule, TimelineEvent, SubscriptionIntent, CancellationDifficulty } from '@/types/subscription';
 import { Calendar } from '@/app/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/app/components/ui/popover';
-import { CalendarIcon, ChevronRight, ChevronLeft, Info } from 'lucide-react';
+import { CalendarIcon, ChevronRight, ChevronLeft, Info, Sparkles } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { computeCancelByDate, getCancelByRuleLabel, getDefaultReminders, getDefaultCancelByRule } from '@/utils/subscriptionHelpers';
+import { findGuideByName, CancellationGuide } from '@/data/cancellationGuides';
+import { getDifficultyLabel } from '@/utils/subscriptionUtils';
 
 interface AddSubscriptionDialogProps {
   open: boolean;
@@ -30,6 +32,8 @@ type FormStep = 'basic' | 'cancellation' | 'advanced';
 export function AddSubscriptionDialog({ open, onOpenChange, onSave, initialData }: AddSubscriptionDialogProps) {
   const [step, setStep] = useState<FormStep>('basic');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [matchedGuide, setMatchedGuide] = useState<CancellationGuide | null>(null);
+  const [guideApplied, setGuideApplied] = useState(false);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -103,8 +107,39 @@ export function AddSubscriptionDialog({ open, onOpenChange, onSave, initialData 
     } else if (!open) {
       setFormData(getDefaultFormData());
       setStep('basic');
+      setMatchedGuide(null);
+      setGuideApplied(false);
     }
   }, [initialData, open]);
+
+  // Auto-detect cancellation guide when name changes
+  useEffect(() => {
+    if (initialData) return; // Don't auto-fill when editing
+    const guide = findGuideByName(formData.name);
+    setMatchedGuide(guide);
+    if (!guide) setGuideApplied(false);
+  }, [formData.name, initialData]);
+
+  const applyGuide = (guide: CancellationGuide) => {
+    const newCancelByDate = computeCancelByDate(formData.renewalDate, guide.cancelByRule);
+    setFormData({
+      ...formData,
+      name: guide.serviceName, // Use canonical name
+      category: guide.category,
+      cancellationMethod: guide.method,
+      cancellationUrl: guide.cancellationUrl,
+      cancellationSteps: guide.steps.map(s => `${s.number}. ${s.title}: ${s.description}`).join('\n'),
+      cancellationDifficulty: guide.difficulty,
+      supportContact: guide.supportContact || '',
+      requiredInfo: guide.requiredInfo || '',
+      cancelByRule: guide.cancelByRule,
+      cancelByDate: newCancelByDate,
+      cancelByNotes: guide.cancelByNotes || '',
+      billingPeriod: guide.billingPeriod || formData.billingPeriod,
+      amount: guide.amount && formData.amount === 0 ? guide.amount : formData.amount,
+    });
+    setGuideApplied(true);
+  };
 
   const handleIntentChange = (newIntent: SubscriptionIntent) => {
     const newCancelByRule = getDefaultCancelByRule(newIntent);
@@ -216,8 +251,47 @@ export function AddSubscriptionDialog({ open, onOpenChange, onSave, initialData 
                 {errors.name && (
                   <p className="text-sm text-red-600">{errors.name}</p>
                 )}
+
+                {/* Guide Auto-Fill Suggestion */}
+                {matchedGuide && !guideApplied && !initialData && (
+                  <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/50 dark:to-blue-950/50 border border-purple-200 dark:border-purple-800 rounded-lg p-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-2">
+                        <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400 mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-sm font-medium text-purple-900 dark:text-purple-200">
+                            We have a cancellation guide for {matchedGuide.serviceName}!
+                          </p>
+                          <p className="text-xs text-purple-600 dark:text-purple-400 mt-0.5">
+                            {matchedGuide.difficulty <= 2 ? '😊' : matchedGuide.difficulty === 3 ? '😐' : matchedGuide.difficulty === 4 ? '😤' : '🤬'}{' '}
+                            {getDifficultyLabel(matchedGuide.difficulty)} to cancel • {matchedGuide.estimatedTime} • {matchedGuide.steps.length} steps
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="default"
+                        className="shrink-0 bg-purple-600 hover:bg-purple-700"
+                        onClick={() => applyGuide(matchedGuide)}
+                      >
+                        <Sparkles className="h-3 w-3 mr-1" />
+                        Auto-Fill
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {guideApplied && matchedGuide && (
+                  <div className="bg-green-50 dark:bg-green-950/50 border border-green-200 dark:border-green-800 rounded-lg p-2 flex items-center gap-2">
+                    <Sparkles className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                    <span className="text-xs text-green-700 dark:text-green-400">
+                      Guide data applied for {matchedGuide.serviceName} — cancellation details, difficulty, and steps auto-filled!
+                    </span>
+                  </div>
+                )}
               </div>
-              
+
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="amount">Amount *</Label>

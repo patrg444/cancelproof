@@ -13,19 +13,22 @@ import { CancellationTimeline } from '@/app/components/CancellationTimeline';
 import { ProofList } from '@/app/components/ProofList';
 import { ProofUploader } from '@/app/components/ProofUploader';
 import { ProofStatusBadge } from '@/app/components/ProofStatusBadge';
-import { 
-  Calendar, 
-  ExternalLink, 
+import {
+  Calendar,
+  ExternalLink,
   Plus,
   Clock,
   AlertCircle,
   Download,
-  FileText
+  FileText,
+  BookOpen
 } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { exportSubscriptionProofBinder } from '@/utils/pdfExport';
 import { getProofStatus, getCancelByRuleLabel, getIntentLabel } from '@/utils/subscriptionHelpers';
 import { formatCurrency, getDifficultyLabel, getDifficultyColor } from '@/utils/subscriptionUtils';
+import { findGuideByName } from '@/data/cancellationGuides';
+import { CancellationGuideViewer } from '@/app/components/CancellationGuideViewer';
 
 interface SubscriptionDetailDialogProps {
   subscription: Subscription | null;
@@ -41,8 +44,11 @@ export function SubscriptionDetailDialog({
   onUpdateSubscription,
 }: SubscriptionDetailDialogProps) {
   const [isAddingProof, setIsAddingProof] = useState(false);
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
 
   if (!subscription) return null;
+
+  const matchedGuide = findGuideByName(subscription.name);
 
   const handleAddProof = (proofData: Omit<ProofDocument, 'id' | 'timestamp'>) => {
     const newProof: ProofDocument = {
@@ -172,9 +178,19 @@ export function SubscriptionDetailDialog({
         {/* Actions */}
         {(subscription.status === 'active' || subscription.status === 'trial') && (
           <div className="flex flex-wrap gap-2 pb-4 border-b">
-            {subscription.cancellationUrl && (
+            {matchedGuide && (
               <Button
                 variant="default"
+                className="bg-purple-600 hover:bg-purple-700"
+                onClick={() => setIsGuideOpen(true)}
+              >
+                <BookOpen className="h-4 w-4 mr-2" />
+                Cancellation Guide
+              </Button>
+            )}
+            {subscription.cancellationUrl && (
+              <Button
+                variant={matchedGuide ? 'outline' : 'default'}
                 onClick={() => window.open(subscription.cancellationUrl, '_blank')}
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
@@ -182,7 +198,7 @@ export function SubscriptionDetailDialog({
               </Button>
             )}
             {subscription.cancellationSteps && (
-              <Button 
+              <Button
                 variant="outline"
                 onClick={() => {
                   // Scroll to details tab
@@ -194,8 +210,8 @@ export function SubscriptionDetailDialog({
                 View Steps
               </Button>
             )}
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => exportSubscriptionProofBinder(subscription)}
               className="ml-auto"
             >
@@ -336,6 +352,14 @@ export function SubscriptionDetailDialog({
         </Tabs>
         </div>
       </DialogContent>
+
+      {matchedGuide && (
+        <CancellationGuideViewer
+          guide={matchedGuide}
+          open={isGuideOpen}
+          onOpenChange={setIsGuideOpen}
+        />
+      )}
     </Dialog>
   );
 }

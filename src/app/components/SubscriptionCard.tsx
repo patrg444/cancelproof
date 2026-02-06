@@ -14,10 +14,13 @@ import {
   FileText,
   Plus,
   MapPin,
-  Timer
+  Timer,
+  BookOpen
 } from 'lucide-react';
 import { CountdownTimer } from '@/app/components/CountdownTimer';
 import { RageTemplatesDialog } from '@/app/components/RageTemplatesDialog';
+import { CancellationGuideViewer } from '@/app/components/CancellationGuideViewer';
+import { findGuideByName } from '@/data/cancellationGuides';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -62,7 +65,9 @@ export function SubscriptionCard({
   onAddProof
 }: SubscriptionCardProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
 
+  const matchedGuide = findGuideByName(subscription.name);
   const monthlyEquivalent = calculateMonthlyEquivalent(subscription.amount, subscription.billingPeriod);
   const today = new Date();
   const cancelByDate = parseISO(subscription.cancelByDate);
@@ -203,6 +208,12 @@ export function SubscriptionCard({
                 <DropdownMenuItem onClick={() => onViewDetails(subscription)}>
                   <FileText className="h-4 w-4 mr-2" />
                   View Details
+                </DropdownMenuItem>
+              )}
+              {matchedGuide && (subscription.status === 'active' || subscription.status === 'trial') && (
+                <DropdownMenuItem onClick={() => setIsGuideOpen(true)}>
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  View Cancellation Guide
                 </DropdownMenuItem>
               )}
               {subscription.cancellationUrl && (subscription.status === 'active' || subscription.status === 'trial') && (
@@ -403,6 +414,14 @@ export function SubscriptionCard({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {matchedGuide && (
+        <CancellationGuideViewer
+          guide={matchedGuide}
+          open={isGuideOpen}
+          onOpenChange={setIsGuideOpen}
+        />
+      )}
     </Card>
   );
 }
