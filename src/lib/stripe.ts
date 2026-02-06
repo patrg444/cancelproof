@@ -6,7 +6,6 @@ export function getStripe(): Promise<Stripe | null> {
   if (!stripePromise) {
     const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
     if (!publishableKey) {
-      console.warn('Stripe publishable key not configured');
       return Promise.resolve(null);
     }
     stripePromise = loadStripe(publishableKey);
@@ -85,36 +84,36 @@ export async function createCheckoutSession(
 
     return { url: data.url };
   } catch (error) {
-    console.error('Checkout error:', error);
     return { error: error instanceof Error ? error.message : 'Failed to start checkout. Please try again.' };
   }
 }
 
-// Create billing portal session (requires backend)
+// Create billing portal session via Supabase Edge Function
 export async function createBillingPortalSession(
-  userId: string,
-  returnUrl: string
+  authToken: string
 ): Promise<{ url: string } | { error: string }> {
   try {
-    const response = await fetch('/api/create-portal-session', {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    if (!supabaseUrl) {
+      throw new Error('Supabase URL not configured');
+    }
+
+    const response = await fetch(`${supabaseUrl}/functions/v1/create-portal-session`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`,
       },
-      body: JSON.stringify({
-        userId,
-        returnUrl,
-      }),
     });
 
+    const data = await response.json();
+
     if (!response.ok) {
-      throw new Error('Failed to create portal session');
+      throw new Error(data.error || 'Failed to create portal session');
     }
 
-    const data = await response.json();
     return { url: data.url };
   } catch (error) {
-    console.error('Portal error:', error);
-    return { error: 'Failed to open billing portal. Please try again.' };
+    return { error: error instanceof Error ? error.message : 'Failed to open billing portal. Please try again.' };
   }
 }

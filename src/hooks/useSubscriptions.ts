@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Subscription, ProofDocument, TimelineEvent } from '@/types/subscription';
@@ -90,134 +91,116 @@ function subscriptionToDb(sub: Subscription, userId: string): any {
   };
 }
 
+const QUERY_KEY = ['subscriptions'] as const;
+
+async function fetchSubscriptions(userId: string | undefined): Promise<Subscription[]> {
+  if (supabase && userId) {
+    const { data, error: dbError } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('user_id', userId)
+      .order('cancel_by_date', { ascending: true });
+
+    if (dbError) throw dbError;
+
+    const subs = (data || []).map(dbToSubscription);
+    saveToLocalStorage({ subscriptions: subs, version: '1.0.0' });
+    return subs;
+  }
+
+  // Offline mode
+  const localData = loadFromLocalStorage();
+  return localData?.subscriptions || [];
+}
+
 export function useSubscriptions() {
   const { user, isConfigured } = useAuth();
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  // Load subscriptions
-  const loadSubscriptions = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const { data: subscriptions = [], isLoading: loading, error: queryError, refetch } = useQuery({
+    queryKey: [...QUERY_KEY, user?.id],
+    queryFn: () => fetchSubscriptions(user?.id),
+    staleTime: 1000 * 60 * 2,
+    meta: { fallback: true },
+  });
 
-    try {
-      if (supabase && user) {
-        // Load from Supabase
-        const { data, error: dbError } = await supabase
-          .from('subscriptions')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('cancel_by_date', { ascending: true });
+  const error = queryError ? String(queryError) : null;
 
-        if (dbError) throw dbError;
+  // --- Mutations with optimistic cache updates ---
+  const addMutation = useMutation({
+    mutationFn: async (subscription: Omit<Subscription, 'id' | 'createdAt' | 'updatedAt'>) => {
+      const newSubscription: Subscription = {
+        ...subscription,
+        id: `sub-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
 
-        const subs = (data || []).map(dbToSubscription);
-        setSubscriptions(subs);
-
-        // Also save to localStorage as backup
-        saveToLocalStorage({ subscriptions: subs, version: '1.0.0' });
-      } else {
-        // Load from localStorage (offline mode)
-        const data = loadFromLocalStorage();
-        setSubscriptions(data?.subscriptions || []);
-      }
-    } catch (err) {
-      // Fallback to localStorage on error
-      const data = loadFromLocalStorage();
-      setSubscriptions(data?.subscriptions || []);
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
-  // Initial load
-  useEffect(() => {
-    loadSubscriptions();
-  }, [loadSubscriptions]);
-
-  // Add subscription
-  const addSubscription = useCallback(async (
-    subscription: Omit<Subscription, 'id' | 'createdAt' | 'updatedAt'>
-  ): Promise<Subscription> => {
-    const newSubscription: Subscription = {
-      ...subscription,
-      id: `sub-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    try {
       if (supabase && user) {
         const { error: dbError } = await supabase
           .from('subscriptions')
           .insert(subscriptionToDb(newSubscription, user.id));
-
         if (dbError) throw dbError;
       }
 
-      const updated = [...subscriptions, newSubscription];
-      setSubscriptions(updated);
-      saveToLocalStorage({ subscriptions: updated, version: '1.0.0' });
-
       return newSubscription;
-    } catch (err) {
-      throw err;
-    }
-  }, [subscriptions, user]);
+    },
+    onSuccess: (newSub) => {
+      queryClient.setQueryData([...QUERY_KEY, user?.id], (old: Subscription[] | undefined) => {
+        const updated = [...(old || []), newSub];
+        saveToLocalStorage({ subscriptions: updated, version: '1.0.0' });
+        return updated;
+      });
+    },
+  });
 
-  // Update subscription
-  const updateSubscription = useCallback(async (
-    subscription: Subscription
-  ): Promise<Subscription> => {
-    const updatedSubscription = {
-      ...subscription,
-      updatedAt: new Date().toISOString(),
-    };
+  const updateMutation = useMutation({
+    mutationFn: async (subscription: Subscription) => {
+      const updatedSubscription = {
+        ...subscription,
+        updatedAt: new Date().toISOString(),
+      };
 
-    try {
       if (supabase && user) {
         const { error: dbError } = await supabase
           .from('subscriptions')
           .update(subscriptionToDb(updatedSubscription, user.id))
           .eq('id', subscription.id)
           .eq('user_id', user.id);
-
         if (dbError) throw dbError;
       }
 
-      const updated = subscriptions.map(sub =>
-        sub.id === subscription.id ? updatedSubscription : sub
-      );
-      setSubscriptions(updated);
-      saveToLocalStorage({ subscriptions: updated, version: '1.0.0' });
-
       return updatedSubscription;
-    } catch (err) {
-      throw err;
-    }
-  }, [subscriptions, user]);
+    },
+    onSuccess: (updatedSub) => {
+      queryClient.setQueryData([...QUERY_KEY, user?.id], (old: Subscription[] | undefined) => {
+        const updated = (old || []).map(sub => sub.id === updatedSub.id ? updatedSub : sub);
+        saveToLocalStorage({ subscriptions: updated, version: '1.0.0' });
+        return updated;
+      });
+    },
+  });
 
-  // Delete subscription
-  const deleteSubscription = useCallback(async (id: string): Promise<void> => {
-    try {
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
       if (supabase && user) {
         const { error: dbError } = await supabase
           .from('subscriptions')
           .delete()
           .eq('id', id)
           .eq('user_id', user.id);
-
         if (dbError) throw dbError;
       }
-
-      const updated = subscriptions.filter(sub => sub.id !== id);
-      setSubscriptions(updated);
-      saveToLocalStorage({ subscriptions: updated, version: '1.0.0' });
-    } catch (err) {
-      throw err;
-    }
-  }, [subscriptions, user]);
+      return id;
+    },
+    onSuccess: (id) => {
+      queryClient.setQueryData([...QUERY_KEY, user?.id], (old: Subscription[] | undefined) => {
+        const updated = (old || []).filter(sub => sub.id !== id);
+        saveToLocalStorage({ subscriptions: updated, version: '1.0.0' });
+        return updated;
+      });
+    },
+  });
 
   // Sync local data to cloud (for when user logs in)
   const syncToCloud = useCallback(async (): Promise<void> => {
@@ -227,40 +210,36 @@ export function useSubscriptions() {
     if (!localData?.subscriptions.length) return;
 
     try {
-      // Get existing cloud subscriptions
       const { data: cloudData } = await supabase
         .from('subscriptions')
         .select('id')
         .eq('user_id', user.id);
 
       const cloudIds = new Set((cloudData || []).map(s => s.id));
-
-      // Upload local subscriptions that don't exist in cloud
       const toUpload = localData.subscriptions.filter(s => !cloudIds.has(s.id));
 
       if (toUpload.length > 0) {
         const { error } = await supabase
           .from('subscriptions')
           .insert(toUpload.map(s => subscriptionToDb(s, user.id)));
-
         if (error) throw error;
       }
 
       // Reload to get merged data
-      await loadSubscriptions();
+      await refetch();
     } catch {
       // Sync error handled gracefully - local data preserved
     }
-  }, [user, loadSubscriptions]);
+  }, [user, refetch]);
 
   return {
     subscriptions,
     loading,
     error,
-    addSubscription,
-    updateSubscription,
-    deleteSubscription,
-    refresh: loadSubscriptions,
+    addSubscription: (sub: Omit<Subscription, 'id' | 'createdAt' | 'updatedAt'>) => addMutation.mutateAsync(sub),
+    updateSubscription: (sub: Subscription) => updateMutation.mutateAsync(sub),
+    deleteSubscription: (id: string) => deleteMutation.mutateAsync(id),
+    refresh: refetch,
     syncToCloud,
     isCloudEnabled: isConfigured && !!user,
   };

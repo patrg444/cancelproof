@@ -28,10 +28,12 @@ export function ProofList({ proofs, onDeleteProof, onViewProof }: ProofListProps
 
   if (proofs.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
-        <FileText className="h-12 w-12 mx-auto mb-3 text-gray-400" />
-        <p className="text-sm">No proof items yet</p>
-        <p className="text-xs mt-1">Add screenshots, emails, or confirmation numbers</p>
+      <div className="text-center py-12 px-4">
+        <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+          <FileText className="h-6 w-6 text-gray-400" />
+        </div>
+        <p className="text-sm font-medium text-gray-700">No proof items yet</p>
+        <p className="text-xs text-gray-500 mt-1">Add screenshots, emails, or confirmation numbers as proof of cancellation</p>
       </div>
     );
   }
@@ -64,6 +66,7 @@ export function ProofList({ proofs, onDeleteProof, onViewProof }: ProofListProps
                         size="sm"
                         onClick={() => onViewProof(proof)}
                         className="h-8 w-8 p-0"
+                        aria-label={`View ${proof.name}`}
                       >
                         <ExternalLink className="h-4 w-4" />
                       </Button>
@@ -74,6 +77,7 @@ export function ProofList({ proofs, onDeleteProof, onViewProof }: ProofListProps
                         size="sm"
                         onClick={() => onDeleteProof(proof.id)}
                         className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        aria-label={`Delete ${proof.name}`}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

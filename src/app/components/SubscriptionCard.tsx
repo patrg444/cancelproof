@@ -22,6 +22,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/app/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogTitle,
+} from '@/app/components/ui/alert-dialog';
+import { useState } from 'react';
 import { 
   formatCurrency, 
   calculateMonthlyEquivalent,
@@ -38,20 +48,31 @@ interface SubscriptionCardProps {
   onAddProof?: (subscription: Subscription) => void;
 }
 
-export function SubscriptionCard({ 
-  subscription, 
-  onEdit, 
+export function SubscriptionCard({
+  subscription,
+  onEdit,
   onDelete,
   onViewDetails,
   onMarkCancelled,
   onAddProof
 }: SubscriptionCardProps) {
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
   const monthlyEquivalent = calculateMonthlyEquivalent(subscription.amount, subscription.billingPeriod);
   const today = new Date();
   const cancelByDate = parseISO(subscription.cancelByDate);
   const renewalDate = parseISO(subscription.renewalDate);
   const daysUntilCancelBy = differenceInDays(cancelByDate, today);
   const daysUntilRenewal = differenceInDays(renewalDate, today);
+
+  const handleDeleteClick = () => {
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    setIsDeleteDialogOpen(false);
+    onDelete(subscription.id);
+  };
 
   const categoryColors: Record<string, string> = {
     streaming: 'bg-purple-100 text-purple-700',
@@ -109,7 +130,7 @@ export function SubscriptionCard({
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className="hover:shadow-lg transition-all duration-200 ease-out">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -163,7 +184,12 @@ export function SubscriptionCard({
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                aria-label={`Options for ${subscription.name}`}
+              >
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -185,8 +211,8 @@ export function SubscriptionCard({
                 Edit
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                onClick={() => onDelete(subscription.id)}
+              <DropdownMenuItem
+                onClick={handleDeleteClick}
                 className="text-red-600"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
@@ -328,6 +354,21 @@ export function SubscriptionCard({
           )}
         </div>
       </CardContent>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogTitle>Delete Subscription</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to delete <span className="font-semibold">{subscription.name}</span>? This action cannot be undone, but all proof documents are preserved in your backups.
+          </AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

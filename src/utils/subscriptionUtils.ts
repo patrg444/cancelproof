@@ -1,6 +1,19 @@
 import { Subscription, BillingPeriod } from '@/types/subscription';
 import { format, differenceInDays, addMonths, addYears, addWeeks, parseISO } from 'date-fns';
 
+// Consistent date formatting throughout the app
+export const DATE_FORMAT = 'MMM d, yyyy';
+export const DATE_TIME_FORMAT = 'MMM d, yyyy h:mm a';
+
+export function formatDate(date: string | Date, pattern: string = DATE_FORMAT): string {
+  try {
+    const d = typeof date === 'string' ? parseISO(date) : date;
+    return format(d, pattern);
+  } catch {
+    return '';
+  }
+}
+
 export const CURRENCIES = [
   { code: 'USD', symbol: '$', name: 'US Dollar' },
   { code: 'EUR', symbol: '€', name: 'Euro' },
@@ -174,7 +187,7 @@ export function exportToCSV(subscriptions: Subscription[]): string {
   
   const csvContent = [
     headers.join(','),
-    ...rows.map(row => row.map(cell => `\"${cell}\"`).join(','))
+    ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
   ].join('\n');
   
   return csvContent;

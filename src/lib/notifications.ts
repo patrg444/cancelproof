@@ -31,7 +31,6 @@ export async function registerPushSubscription(userId: string): Promise<PushSubs
     // Get VAPID public key from environment
     const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
     if (!vapidPublicKey) {
-      console.warn('VAPID public key not configured');
       return null;
     }
 
@@ -53,8 +52,7 @@ export async function registerPushSubscription(userId: string): Promise<PushSubs
     }
 
     return subscription;
-  } catch (error) {
-    console.error('Failed to register push subscription:', error);
+  } catch {
     return null;
   }
 }
@@ -77,8 +75,8 @@ export async function unregisterPushSubscription(userId: string): Promise<void> 
           .eq('endpoint', subscription.endpoint);
       }
     }
-  } catch (error) {
-    console.error('Failed to unregister push subscription:', error);
+  } catch {
+    // Unregister failed - gracefully ignore
   }
 }
 

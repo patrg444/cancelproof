@@ -6,7 +6,17 @@ import { Label } from '@/app/components/ui/label';
 import { Separator } from '@/app/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { Bell, Cloud, CreditCard, Download, Trash2, Shield, Loader2, Check } from 'lucide-react';
+import { Bell, Cloud, CreditCard, Download, Trash2, Shield, Loader2, Check, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/app/components/ui/alert';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogTitle,
+} from '@/app/components/ui/alert-dialog';
 import { exportBackup, clearAllData } from '@/utils/storage';
 import {
   getNotificationPermission,
@@ -27,6 +37,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [emailReminders, setEmailReminders] = useState(true);
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const [isLoading, setIsLoading] = useState(false);
+  const [isClearDataDialogOpen, setIsClearDataDialogOpen] = useState(false);
   const [userSubscription, setUserSubscription] = useState<{
     status: string;
     plan: string;
@@ -87,11 +98,14 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   };
 
   const handleClearData = () => {
-    if (confirm('Are you sure you want to delete all local data? This cannot be undone.')) {
-      clearAllData();
-      toast.success('All local data cleared');
-      window.location.reload();
-    }
+    setIsClearDataDialogOpen(true);
+  };
+
+  const handleConfirmClearData = () => {
+    setIsClearDataDialogOpen(false);
+    clearAllData();
+    toast.success('All local data has been cleared');
+    window.location.reload();
   };
 
   const handleUpgrade = async () => {
@@ -130,9 +144,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       } else if (result.url) {
         window.location.href = result.url;
       }
-    } catch (error) {
-      console.error('Upgrade error:', error);
-      toast.error('Failed to start checkout');
+    } catch {
+      toast.error('Unable to process upgrade. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -157,9 +170,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       } else if (result.url) {
         window.location.href = result.url;
       }
-    } catch (error) {
-      console.error('Portal error:', error);
-      toast.error('Failed to open billing portal');
+    } catch {
+      toast.error('Unable to open billing portal. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -176,6 +188,16 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
         </DialogHeader>
 
         <div className="space-y-6 py-4">
+          {/* Data Safety Warning */}
+          {!isConfigured && (
+            <Alert className="bg-amber-50 border-amber-200">
+              <AlertCircle className="h-4 w-4 text-amber-600" />
+              <AlertDescription className="text-amber-800 text-sm">
+                Your data is stored locally. Regularly export backups to keep your cancellation proof safe.
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Account Section */}
           <div>
             <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center gap-2">
@@ -385,6 +407,21 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
           </div>
         </div>
       </DialogContent>
+
+      <AlertDialog open={isClearDataDialogOpen} onOpenChange={setIsClearDataDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogTitle>Clear All Data</AlertDialogTitle>
+          <AlertDialogDescription>
+            This will delete all your subscriptions and data from this device. This action cannot be undone. Please export a backup first if you want to preserve your data.
+          </AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmClearData} className="bg-red-600 hover:bg-red-700">
+              Clear Data
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }

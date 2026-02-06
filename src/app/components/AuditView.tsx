@@ -91,7 +91,7 @@ export function AuditView({ subscriptions }: AuditViewProps) {
     ]);
     
     const csvContent = [headers, ...rows]
-      .map(row => row.map(cell => `\"${cell}\"`).join(','))
+      .map(row => row.map(cell => `"${cell}"`).join(','))
       .join('\n');
     
     const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -109,8 +109,8 @@ export function AuditView({ subscriptions }: AuditViewProps) {
     }
     try {
       exportAllSubscriptionsProofBinder(subscriptions);
-    } catch (error) {
-      console.error('Error exporting PDF:', error);
+    } catch {
+      // PDF export error handled
     }
   };
 

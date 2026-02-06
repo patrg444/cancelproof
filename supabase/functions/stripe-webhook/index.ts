@@ -2,23 +2,40 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@14.21.0?target=deno";
 
-const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+const stripeConfig: any = {
   apiVersion: "2023-10-16",
   httpClient: Stripe.createFetchHttpClient(),
-});
+};
+const stripeHost = Deno.env.get("STRIPE_API_HOST");
+const stripeProtocol = Deno.env.get("STRIPE_API_PROTOCOL");
+const stripePort = Deno.env.get("STRIPE_API_PORT");
+const stripeTimeoutMs = Number(Deno.env.get("STRIPE_TIMEOUT_MS") || "10000");
+if (stripeHost) stripeConfig.host = stripeHost;
+if (stripeProtocol) stripeConfig.protocol = stripeProtocol;
+if (stripePort) stripeConfig.port = Number(stripePort);
+if (Number.isFinite(stripeTimeoutMs)) stripeConfig.timeout = stripeTimeoutMs;
+const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", stripeConfig);
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
+const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET") || "";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": Deno.env.get("CORS_ORIGIN") || "https://cancelmem.com",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, stripe-signature",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   try {
@@ -28,20 +45,28 @@ serve(async (req) => {
 
     let event: Stripe.Event;
 
-    // Verify webhook signature if secret is configured
-    if (webhookSecret && signature) {
-      try {
-        event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-      } catch (err) {
-        console.error("Webhook signature verification failed:", err);
-        return new Response(JSON.stringify({ error: "Invalid signature" }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-    } else {
-      // For development/testing without signature verification
-      event = JSON.parse(body);
+    if (!webhookSecret) {
+      return new Response(JSON.stringify({ error: "Stripe webhook is not configured" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (!signature) {
+      return new Response(JSON.stringify({ error: "Missing stripe-signature header" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    try {
+      event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
+    } catch (err) {
+      console.error("Webhook signature verification failed:", err);
+      return new Response(JSON.stringify({ error: "Invalid signature" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     console.log("Processing webhook event:", event.type);
@@ -54,12 +79,21 @@ serve(async (req) => {
 
         // Get the subscription details
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-        const userId = subscription.metadata.supabase_user_id;
+
+        // Use client_reference_id as primary source (most reliable)
+        // Fall back to session metadata, then subscription metadata
+        const userId = session.client_reference_id
+          || session.metadata?.supabase_user_id
+          || subscription.metadata.supabase_user_id;
 
         if (!userId) {
-          console.error("No user ID in subscription metadata");
+          console.error("No user ID found in session or subscription");
           break;
         }
+
+        console.log("Processing checkout for user:", userId, "from source:",
+          session.client_reference_id ? "client_reference_id" :
+          session.metadata?.supabase_user_id ? "session_metadata" : "subscription_metadata");
 
         // Upsert user subscription record
         const { error: upsertError } = await supabase

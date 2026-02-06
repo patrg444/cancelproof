@@ -4,6 +4,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+const CRON_SECRET = Deno.env.get("CRON_SECRET");
+const APP_URL = Deno.env.get("APP_URL") || "https://cancelmem.com";
+const FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") || "CancelMem <reminders@cancelmem.com>";
 
 interface Subscription {
   id: string;
@@ -20,9 +23,31 @@ interface UserWithEmail {
 }
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Origin": Deno.env.get("CORS_ORIGIN") || "https://cancelmem.com",
+  "Access-Control-Allow-Headers": "authorization, x-cron-secret, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
+
+function getBearerToken(req: Request): string | null {
+  const header = req.headers.get("authorization") || req.headers.get("Authorization");
+  if (!header) return null;
+  const match = header.match(/^Bearer\s+(.+)$/i);
+  return match?.[1] ?? null;
+}
+
+function isCronAuthorized(req: Request): boolean {
+  const headerSecret = req.headers.get("x-cron-secret");
+  if (CRON_SECRET && headerSecret && headerSecret === CRON_SECRET) return true;
+
+  const bearer = getBearerToken(req);
+  const apikey = req.headers.get("apikey");
+
+  if (CRON_SECRET && bearer && bearer === CRON_SECRET) return true;
+  if (SUPABASE_SERVICE_ROLE_KEY && bearer && bearer === SUPABASE_SERVICE_ROLE_KEY) return true;
+  if (SUPABASE_SERVICE_ROLE_KEY && apikey && apikey === SUPABASE_SERVICE_ROLE_KEY) return true;
+
+  return false;
+}
 
 async function sendEmail(to: string, subject: string, html: string) {
   const res = await fetch("https://api.resend.com/emails", {
@@ -32,7 +57,7 @@ async function sendEmail(to: string, subject: string, html: string) {
       Authorization: `Bearer ${RESEND_API_KEY}`,
     },
     body: JSON.stringify({
-      from: "CancelMem <reminders@cancelmem.com>",
+      from: FROM_EMAIL,
       to: [to],
       subject,
       html,
@@ -115,7 +140,7 @@ function generateReminderEmail(subscription: Subscription, daysUntil: number): {
 
       <!-- CTA Button -->
       <div style="text-align: center; margin-bottom: 24px;">
-        <a href="https://cancelmem.com"
+        <a href="${APP_URL}"
            style="display: inline-block; background-color: #2563eb; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
           Open CancelMem
         </a>
@@ -133,7 +158,7 @@ function generateReminderEmail(subscription: Subscription, daysUntil: number): {
     <div style="text-align: center; margin-top: 20px; color: #9ca3af; font-size: 12px;">
       <p style="margin: 0;">You're receiving this because you enabled email reminders in CancelMem.</p>
       <p style="margin: 8px 0 0;">
-        <a href="https://cancelmem.com/settings" style="color: #6b7280;">Manage notification settings</a>
+        <a href="${APP_URL}/settings" style="color: #6b7280;">Manage notification settings</a>
       </p>
     </div>
   </div>
@@ -150,12 +175,30 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  if (req.method !== "POST") {
+    return new Response(
+      JSON.stringify({ error: "Method not allowed" }),
+      { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+
   try {
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      throw new Error("Supabase not configured");
+    }
+
     if (!RESEND_API_KEY) {
       throw new Error("RESEND_API_KEY not configured");
     }
 
-    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+    if (!isCronAuthorized(req)) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     // Get today's date and the dates we need to check
     const today = new Date();

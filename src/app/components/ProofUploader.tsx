@@ -10,8 +10,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/app/components/ui/select';
-import { Upload, FileText, Hash } from 'lucide-react';
+import { Upload, FileText, Hash, AlertCircle } from 'lucide-react';
 import { ProofDocument } from '@/types/subscription';
+import { toast } from 'sonner';
 
 interface ProofUploaderProps {
   onAddProof: (proof: Omit<ProofDocument, 'id' | 'timestamp'>) => void;
@@ -25,9 +26,16 @@ export function ProofUploader({ onAddProof, onCancel }: ProofUploaderProps) {
   const [confirmationNumber, setConfirmationNumber] = useState('');
   const [file, setFile] = useState<File | null>(null);
 
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
+      if (selectedFile.size > MAX_FILE_SIZE) {
+        setFile(null);
+        toast.error('File is too large. Please choose a file under 10MB.');
+        return;
+      }
       setFile(selectedFile);
       if (!name) {
         setName(selectedFile.name);
@@ -111,11 +119,13 @@ export function ProofUploader({ onAddProof, onCancel }: ProofUploaderProps) {
         </div>
       ) : (
         <div>
-          <Label htmlFor="proof-file">Upload File</Label>
+          <Label htmlFor="proof-file">Upload File *</Label>
           <div className="mt-1">
             <label
               htmlFor="proof-file"
-              className="flex items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none"
+              className={`flex items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-dashed rounded-md appearance-none cursor-pointer focus:outline-none ${
+                !file ? 'border-gray-300 hover:border-gray-400' : 'border-blue-300'
+              }`}
             >
               <div className="flex flex-col items-center space-y-2">
                 {file ? (

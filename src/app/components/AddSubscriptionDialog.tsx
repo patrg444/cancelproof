@@ -29,7 +29,43 @@ type FormStep = 'basic' | 'cancellation' | 'advanced';
 
 export function AddSubscriptionDialog({ open, onOpenChange, onSave, initialData }: AddSubscriptionDialogProps) {
   const [step, setStep] = useState<FormStep>('basic');
-  
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = 'Service name is required';
+    }
+
+    if (formData.amount <= 0) {
+      newErrors.amount = 'Amount must be greater than 0';
+    }
+
+    if (!formData.renewalDate) {
+      newErrors.renewalDate = 'Next charge date is required';
+    }
+
+    if (step === 'cancellation') {
+      if (formData.cancellationUrl && !isValidUrl(formData.cancellationUrl)) {
+        newErrors.cancellationUrl = 'Please enter a valid URL';
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const isValidUrl = (url: string): boolean => {
+    if (!url) return true;
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   const getDefaultFormData = (): Omit<Subscription, 'id' | 'createdAt' | 'updatedAt'> => {
     const renewalDate = new Date().toISOString().split('T')[0];
     const intent: SubscriptionIntent = 'keep';
@@ -106,7 +142,11 @@ export function AddSubscriptionDialog({ open, onOpenChange, onSave, initialData 
 
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    
+
+    if (!validateForm()) {
+      return;
+    }
+
     const initialTimeline: TimelineEvent[] = formData.timeline.length > 0 ? formData.timeline : [{
       id: `event-${Date.now()}`,
       type: 'created',
@@ -170,7 +210,12 @@ export function AddSubscriptionDialog({ open, onOpenChange, onSave, initialData 
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g., Netflix, Spotify, Adobe"
                   required
+                  className={errors.name ? 'border-red-500' : ''}
+                  aria-invalid={!!errors.name}
                 />
+                {errors.name && (
+                  <p className="text-sm text-red-600">{errors.name}</p>
+                )}
               </div>
               
               <div className="grid grid-cols-3 gap-4">
@@ -185,7 +230,12 @@ export function AddSubscriptionDialog({ open, onOpenChange, onSave, initialData 
                     onChange={(e) => setFormData({ ...formData, amount: parseFloat(e.target.value) || 0 })}
                     placeholder="9.99"
                     required
+                    className={errors.amount ? 'border-red-500' : ''}
+                    aria-invalid={!!errors.amount}
                   />
+                  {errors.amount && (
+                    <p className="text-sm text-red-600">{errors.amount}</p>
+                  )}
                 </div>
                 
                 <div className="space-y-2">
@@ -229,7 +279,10 @@ export function AddSubscriptionDialog({ open, onOpenChange, onSave, initialData 
                 <Label>Next Charge Date *</Label>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start text-left font-normal">
+                    <Button
+                      variant="outline"
+                      className={`w-full justify-start text-left font-normal ${errors.renewalDate ? 'border-red-500' : ''}`}
+                    >
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {format(new Date(formData.renewalDate), 'PPP')}
                     </Button>
@@ -243,6 +296,9 @@ export function AddSubscriptionDialog({ open, onOpenChange, onSave, initialData 
                     />
                   </PopoverContent>
                 </Popover>
+                {errors.renewalDate && (
+                  <p className="text-sm text-red-600">{errors.renewalDate}</p>
+                )}
               </div>
 
               {/* Cancel-By Rule - ENHANCED */}
@@ -347,7 +403,12 @@ export function AddSubscriptionDialog({ open, onOpenChange, onSave, initialData 
                   value={formData.cancellationUrl}
                   onChange={(e) => setFormData({ ...formData, cancellationUrl: e.target.value })}
                   placeholder="https://example.com/cancel"
+                  className={errors.cancellationUrl ? 'border-red-500' : ''}
+                  aria-invalid={!!errors.cancellationUrl}
                 />
+                {errors.cancellationUrl && (
+                  <p className="text-sm text-red-600">{errors.cancellationUrl}</p>
+                )}
               </div>
 
               <div className="space-y-2">

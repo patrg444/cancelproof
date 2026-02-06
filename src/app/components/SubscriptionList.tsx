@@ -13,6 +13,7 @@ import {
 import { Search, SlidersHorizontal } from 'lucide-react';
 import { calculateMonthlyEquivalent } from '@/utils/subscriptionUtils';
 import { FileText } from 'lucide-react';
+import { Skeleton } from '@/app/components/ui/skeleton';
 
 interface SubscriptionListProps {
   subscriptions: Subscription[];
@@ -22,19 +23,21 @@ interface SubscriptionListProps {
   onMarkCancelled?: (subscription: Subscription) => void;
   onAddProof?: (subscription: Subscription) => void;
   onLoadSampleData?: () => void;
+  isLoading?: boolean;
 }
 
 type SortOption = 'cancel-by-date' | 'renewal-date' | 'amount-high' | 'amount-low' | 'name' | 'category';
 type FilterOption = 'all' | 'active' | 'trial' | 'cancelled' | 'cancel-attempted' | 'cancel-soon' | 'proof-missing';
 
-export function SubscriptionList({ 
-  subscriptions, 
-  onEdit, 
+export function SubscriptionList({
+  subscriptions,
+  onEdit,
   onDelete,
   onViewDetails,
   onMarkCancelled,
   onAddProof,
-  onLoadSampleData
+  onLoadSampleData,
+  isLoading = false
 }: SubscriptionListProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('cancel-by-date');
@@ -86,14 +89,16 @@ export function SubscriptionList({
         return new Date(a.cancelByDate).getTime() - new Date(b.cancelByDate).getTime();
       case 'renewal-date':
         return new Date(a.renewalDate).getTime() - new Date(b.renewalDate).getTime();
-      case 'amount-high':
+      case 'amount-high': {
         const monthlyA = calculateMonthlyEquivalent(a.amount, a.billingPeriod);
         const monthlyB = calculateMonthlyEquivalent(b.amount, b.billingPeriod);
         return monthlyB - monthlyA;
-      case 'amount-low':
+      }
+      case 'amount-low': {
         const monthlyA2 = calculateMonthlyEquivalent(a.amount, a.billingPeriod);
         const monthlyB2 = calculateMonthlyEquivalent(b.amount, b.billingPeriod);
         return monthlyA2 - monthlyB2;
+      }
       case 'name':
         return a.name.localeCompare(b.name);
       case 'category':
@@ -153,8 +158,18 @@ export function SubscriptionList({
         Showing {filteredSubscriptions.length} of {subscriptions.length} subscription{subscriptions.length !== 1 ? 's' : ''}
       </div>
 
-      {/* Subscription cards */}
-      {filteredSubscriptions.length === 0 ? (
+      {/* Loading state */}
+      {isLoading ? (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="space-y-3">
+              <Skeleton className="h-6 w-32" />
+              <Skeleton className="h-20 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          ))}
+        </div>
+      ) : filteredSubscriptions.length === 0 ? (
         subscriptions.length === 0 ? (
           // Empty state - no subscriptions at all
           <div className="text-center py-16 px-4">

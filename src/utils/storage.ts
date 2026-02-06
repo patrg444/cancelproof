@@ -6,8 +6,8 @@ const VERSION = '1.0.0';
 export function saveToLocalStorage(data: AppData): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  } catch (error) {
-    console.error('Failed to save to local storage:', error);
+  } catch {
+    // Storage full or unavailable - data will remain in memory
   }
 }
 
@@ -15,11 +15,10 @@ export function loadFromLocalStorage(): AppData | null {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) return null;
-    
+
     const data = JSON.parse(stored) as AppData;
     return data;
-  } catch (error) {
-    console.error('Failed to load from local storage:', error);
+  } catch {
     return null;
   }
 }

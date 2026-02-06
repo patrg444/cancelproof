@@ -208,8 +208,8 @@ export async function exportSubscriptionProofBinder(subscription: Subscription):
     // Download the PDF
     const fileName = `CancelMem-${subscription.name.replace(/[^a-z0-9]/gi, '_')}-${format(new Date(), 'yyyy-MM-dd')}.pdf`;
     doc.save(fileName);
-  } catch (error) {
-    console.error('Error exporting subscription proof binder:', error);
+  } catch {
+    throw new Error('Unable to export PDF. Please try again.');
   }
 }
 

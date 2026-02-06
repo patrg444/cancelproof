@@ -1,10 +1,16 @@
 # Dependencies
 node_modules/
+.pnp
+.pnp.js
 
 # Environment variables (NEVER commit these!)
 .env
 .env.local
+.env.development.local
+.env.test.local
+.env.production.local
 .env.*.local
+.env.deploy
 unified-credentials.json
 .secrets/
 
@@ -14,6 +20,7 @@ unified-credentials.json
 # Build output
 dist/
 build/
+out/
 
 # IDE and editor files
 .idea/
@@ -22,11 +29,14 @@ build/
 *.swo
 *~
 .DS_Store
+Thumbs.db
 
 # Logs
 logs/
 *.log
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # Testing
 coverage/
@@ -37,7 +47,6 @@ coverage/
 .cache/
 
 # OS files
-Thumbs.db
 
 # Original zip file
 *.zip

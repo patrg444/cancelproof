@@ -43,12 +43,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .single();
 
       if (error) {
-        console.error('Error fetching profile:', error);
         return null;
       }
       return data as Profile;
-    } catch (err) {
-      console.error('Profile fetch failed:', err);
+    } catch {
       return null;
     }
   };

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs';
 import { Plus, Target, User, LogOut, Cloud, CloudOff, Bell, Settings, Crown } from 'lucide-react';
+import { LoadingState } from '@/app/components/StateViews';
 import { Button } from '@/app/components/ui/button';
 import { Alert, AlertDescription } from '@/app/components/ui/alert';
 import { SubscriptionList } from '@/app/components/SubscriptionList';
@@ -202,10 +203,7 @@ export default function App() {
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
+        <LoadingState message="Authenticating..." />
       </div>
     );
   }
@@ -355,9 +353,7 @@ export default function App() {
         )}
 
         {subsLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          </div>
+          <LoadingState message="Loading subscriptions..." />
         ) : (
           <Tabs defaultValue="actions" className="w-full">
             <TabsList className="grid w-full max-w-md grid-cols-3">
@@ -386,6 +382,7 @@ export default function App() {
                 onMarkCancelled={handleMarkCancelled}
                 onAddProof={handleAddProof}
                 onLoadSampleData={handleLoadSampleData}
+                isLoading={subsLoading}
               />
             </TabsContent>
 

@@ -68,76 +68,31 @@ serve(async (req) => {
       throw new Error("Invalid user token");
     }
 
-    let body: any;
-    try {
-      body = await req.json();
-    } catch {
-      return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const { priceId, billingPeriod } = body ?? {};
-
-    if (!priceId) {
-      throw new Error("Price ID is required");
-    }
-
-    // Check if user already has a Stripe customer ID
-    const { data: existingCustomer } = await supabase
+    // Get the user's Stripe customer ID
+    const { data: subscription, error: subError } = await supabase
       .from("user_subscriptions")
       .select("stripe_customer_id")
       .eq("user_id", user.id)
       .single();
 
-    let customerId = existingCustomer?.stripe_customer_id;
-
-    // Create or retrieve Stripe customer
-    if (!customerId) {
-      const customer = await stripe.customers.create({
-        email: user.email,
-        metadata: {
-          supabase_user_id: user.id,
-        },
-      });
-      customerId = customer.id;
+    if (subError || !subscription?.stripe_customer_id) {
+      throw new Error("No active subscription found");
     }
 
-    // Create Checkout Session with client_reference_id for reliable user linking
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      client_reference_id: user.id, // This is the most reliable way to link users
-      mode: "subscription",
-      payment_method_types: ["card"],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
-      success_url: `${appUrl}/?checkout=success`,
-      cancel_url: `${appUrl}/?checkout=cancelled`,
-      subscription_data: {
-        metadata: {
-          supabase_user_id: user.id,
-          billing_period: billingPeriod || "monthly",
-        },
-      },
-      metadata: {
-        supabase_user_id: user.id,
-      },
-      allow_promotion_codes: true,
+    // Create billing portal session
+    const portalSession = await stripe.billingPortal.sessions.create({
+      customer: subscription.stripe_customer_id,
+      return_url: `${appUrl}/`,
     });
 
     return new Response(
-      JSON.stringify({ url: session.url }),
+      JSON.stringify({ url: portalSession.url }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     );
   } catch (error) {
-    console.error("Checkout error:", error);
+    console.error("Portal session error:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
       {
