@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/app/components/ui/dialog';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
@@ -19,24 +19,36 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const fieldErrors = useMemo(() => {
+    const errors: Record<string, string> = {};
+    if (!email.trim()) errors.email = 'Email is required';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) errors.email = 'Enter a valid email address';
+    if (!password) errors.password = 'Password is required';
+    else if (password.length < 6) errors.password = 'Must be at least 6 characters';
+    if (isSignUp) {
+      if (!confirmPassword) errors.confirmPassword = 'Please confirm your password';
+      else if (confirmPassword !== password) errors.confirmPassword = 'Passwords do not match';
+    }
+    return errors;
+  }, [email, password, confirmPassword, isSignUp]);
+
+  const showError = (field: string) => touched[field] ? fieldErrors[field] : undefined;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const allTouched: Record<string, boolean> = { email: true, password: true };
+    if (isSignUp) allTouched.confirmPassword = true;
+    setTouched(allTouched);
+
+    if (Object.keys(fieldErrors).length > 0) return;
+
     setIsLoading(true);
 
     try {
       if (isSignUp) {
-        if (password !== confirmPassword) {
-          toast.error('Passwords do not match');
-          setIsLoading(false);
-          return;
-        }
-        if (password.length < 6) {
-          toast.error('Password must be at least 6 characters');
-          setIsLoading(false);
-          return;
-        }
-
         const { error } = await signUp(email, password);
         if (error) {
           toast.error(error.message);
@@ -91,10 +103,12 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-10"
+                onBlur={() => setTouched((p) => ({ ...p, email: true }))}
+                className={`pl-10${showError('email') ? ' border-red-500 focus-visible:ring-red-500' : ''}`}
                 required
               />
             </div>
+            {showError('email') && <p className="text-xs text-red-600">{showError('email')}</p>}
           </div>
 
           <div className="space-y-2">
@@ -107,10 +121,12 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pl-10"
+                onBlur={() => setTouched((p) => ({ ...p, password: true }))}
+                className={`pl-10${showError('password') ? ' border-red-500 focus-visible:ring-red-500' : ''}`}
                 required
               />
             </div>
+            {showError('password') && <p className="text-xs text-red-600">{showError('password')}</p>}
           </div>
 
           {isSignUp && (
@@ -124,10 +140,12 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                   placeholder="••••••••"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="pl-10"
+                  onBlur={() => setTouched((p) => ({ ...p, confirmPassword: true }))}
+                  className={`pl-10${showError('confirmPassword') ? ' border-red-500 focus-visible:ring-red-500' : ''}`}
                   required
                 />
               </div>
+              {showError('confirmPassword') && <p className="text-xs text-red-600">{showError('confirmPassword')}</p>}
             </div>
           )}
 
@@ -163,7 +181,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
               <button
                 type="button"
                 className="text-blue-600 hover:underline"
-                onClick={() => setIsSignUp(false)}
+                onClick={() => { setIsSignUp(false); setTouched({}); }}
               >
                 Sign in
               </button>
@@ -174,7 +192,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
               <button
                 type="button"
                 className="text-blue-600 hover:underline"
-                onClick={() => setIsSignUp(true)}
+                onClick={() => { setIsSignUp(true); setTouched({}); }}
               >
                 Create one
               </button>
